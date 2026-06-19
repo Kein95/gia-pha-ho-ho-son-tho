@@ -52,8 +52,8 @@ export default function ThemeSwitcher() {
   return (
     <div
       style={{
-        position: "fixed", left: "50%", bottom: 20, transform: "translateX(-50%)", zIndex: 200,
-        display: "flex", gap: 4, padding: 6, borderRadius: 9999, background: "rgba(28,20,16,.88)",
+        position: "fixed", right: 16, bottom: 16, zIndex: 200,
+        display: "flex", gap: 4, padding: 5, borderRadius: 9999, background: "rgba(28,20,16,.88)",
         backdropFilter: "blur(8px)", boxShadow: "0 12px 30px rgba(0,0,0,.3)",
         border: "1px solid rgba(255,255,255,.12)",
       }}
