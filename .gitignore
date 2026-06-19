@@ -34,8 +34,9 @@ yarn-error.log*
 .env
 .env.local
 
-# source data (photos/videos)
+# source data (photos/videos) + digitized family data — keep private (repo is public)
 anh goc data/
+plans/260619-1933-digitize-genealogy/
 
 # vercel
 .vercel
