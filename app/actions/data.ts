@@ -19,6 +19,9 @@ interface PersonExport {
   death_year: number | null;
   death_month: number | null;
   death_day: number | null;
+  death_lunar_year: number | null;
+  death_lunar_month: number | null;
+  death_lunar_day: number | null;
   is_deceased: boolean;
   is_in_law: boolean;
   birth_order: number | null;
@@ -61,6 +64,9 @@ function sanitizePerson(
     death_year: p.death_year ?? null,
     death_month: p.death_month ?? null,
     death_day: p.death_day ?? null,
+    death_lunar_year: p.death_lunar_year ?? null,
+    death_lunar_month: p.death_lunar_month ?? null,
+    death_lunar_day: p.death_lunar_day ?? null,
     is_deceased: p.is_deceased ?? false,
     is_in_law: p.is_in_law ?? false,
     birth_order: p.birth_order ?? null,
@@ -114,6 +120,9 @@ export async function exportData(
       death_year: p.deathYear,
       death_month: p.deathMonth,
       death_day: p.deathDay,
+      death_lunar_year: p.deathLunarYear,
+      death_lunar_month: p.deathLunarMonth,
+      death_lunar_day: p.deathLunarDay,
       is_deceased: p.isDeceased,
       is_in_law: p.isInLaw,
       birth_order: p.birthOrder,
@@ -230,6 +239,9 @@ export async function importData(importPayload: {
           deathYear: p.death_year,
           deathMonth: p.death_month,
           deathDay: p.death_day,
+          deathLunarYear: p.death_lunar_year,
+          deathLunarMonth: p.death_lunar_month,
+          deathLunarDay: p.death_lunar_day,
           isDeceased: p.is_deceased,
           isInLaw: p.is_in_law,
           birthOrder: p.birth_order,
