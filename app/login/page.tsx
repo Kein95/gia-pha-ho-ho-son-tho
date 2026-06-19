@@ -3,7 +3,7 @@
 import config from "@/app/config";
 import Footer from "@/components/Footer";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Info, KeyRound, Mail, Shield } from "lucide-react";
+import { ArrowLeft, Info, KeyRound, Mail } from "lucide-react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -55,23 +55,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#fafaf9] select-none selection:bg-amber-200 selection:text-amber-900 relative overflow-hidden">
-      {/* Decorative background */}
+    <div className="min-h-screen flex flex-col select-none selection:bg-amber-200 selection:text-amber-900 relative overflow-hidden">
+      {/* Decorative background (over the themed page background) */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-size-[24px_24px] pointer-events-none"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-30%,#fef3c7,transparent)] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-30%,var(--brand-soft),transparent)] opacity-70 pointer-events-none"></div>
 
       <div className="absolute top-0 inset-x-0 h-screen overflow-hidden pointer-events-none flex justify-center">
         <div className="absolute top-[-10%] right-[-5%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-amber-300/20 rounded-full blur-[100px] mix-blend-multiply" />
-        <div className="absolute bottom-[0%] left-[-10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-rose-200/20 rounded-full blur-[120px] mix-blend-multiply" />
+        <div className="absolute bottom-[0%] left-[-10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-[var(--gold)]/12 rounded-full blur-[120px] mix-blend-multiply" />
       </div>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12 relative z-10 w-full">
         <motion.div
-          className="max-w-md w-full bg-white/70 backdrop-blur-xl p-8 sm:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 relative overflow-hidden"
+          className="orn-frame max-w-md w-full bg-white/70 backdrop-blur-xl p-8 sm:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 relative overflow-hidden"
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
+          {/* Khung góc vàng */}
+          <span className="orn-frame__c orn-frame__c--tl" />
+          <span className="orn-frame__c orn-frame__c--tr" />
+          <span className="orn-frame__c orn-frame__c--bl" />
+          <span className="orn-frame__c orn-frame__c--br" />
           <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-amber-100/50 to-transparent rounded-bl-[100px] pointer-events-none"></div>
 
           <div className="text-center mb-8 relative z-10">
@@ -79,7 +84,10 @@ export default function LoginPage() {
               href="/"
               className="inline-flex items-center justify-center p-3.5 bg-white rounded-2xl mb-5 shadow-sm ring-1 ring-stone-100 hover:scale-105 hover:shadow-md transition-all duration-300"
             >
-              <Shield className="size-8 text-amber-600" />
+              {/* Ấn triện Phúc */}
+              <span className="seal" style={{ width: 48, height: 48, fontSize: 24 }}>
+                福
+              </span>
             </Link>
             <h2 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900 tracking-tight">
               Đăng nhập
@@ -87,6 +95,10 @@ export default function LoginPage() {
             <p className="mt-3 text-sm text-stone-500 font-medium tracking-wide">
               Đăng nhập để truy cập gia phả.
             </p>
+
+            <div className="orn-rule max-w-[200px] mx-auto mt-5">
+              <span className="orn-rule__dot" />
+            </div>
             {isDemo && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}

@@ -1,27 +1,72 @@
+/* Google Fonts must precede all other rules (CSS @import ordering).
+   Delivers Noto Serif + Noto Serif TC — TC renders the CJK seals
+   (福 / 家譜 / 譜) used by the .seal / .cau-doi ornaments. */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400&family=Noto+Serif+TC:wght@500;700;900&display=swap');
 @import "tailwindcss";
+@import "./giapha-themes.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* ════════════════════════════════════════════════════════════
+   Tailwind palette → traditional theme tokens (Mức B integration)
+   ────────────────────────────────────────────────────────────
+   The app uses hard-coded `amber-*` (brand) and `stone-*` (neutral)
+   utility classes everywhere. We re-point those two Tailwind color
+   ramps at the per-theme CSS variables defined in giapha-themes.css.
+   Because @theme inline emits the var() reference into each utility,
+   every existing `bg-amber-600`, `text-stone-800`, … re-themes at
+   runtime when `data-theme` changes on <html>. Semantic colors
+   (rose/sky/red/emerald) are intentionally left untouched — they
+   encode gender and status, not brand.
+   ════════════════════════════════════════════════════════════ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
-  --font-serif: var(--font-playfair);
-}
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-serif: var(--font-noto-serif), var(--font-playfair), Georgia, serif;
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-} */
+  /* shared background/foreground driven by the active theme */
+  --color-background: var(--bg-page);
+  --color-foreground: var(--text-strong);
+
+  /* amber → brand accent ramp */
+  --color-amber-50: var(--brand-tint);
+  --color-amber-100: var(--brand-soft);
+  --color-amber-200: var(--brand-soft);
+  --color-amber-300: var(--border-hover);
+  --color-amber-400: var(--ring-focus);
+  --color-amber-500: var(--gold);
+  --color-amber-600: var(--brand);
+  --color-amber-700: var(--brand-strong);
+  --color-amber-800: var(--brand-strong);
+  --color-amber-900: var(--accent-ink);
+  --color-amber-950: var(--accent-ink);
+
+  /* stone → neutral text / surface / border ramp */
+  --color-stone-50: var(--surface-muted);
+  --color-stone-100: var(--surface-muted);
+  --color-stone-200: var(--border-strong);
+  --color-stone-300: var(--border-strong);
+  --color-stone-400: var(--text-faint);
+  --color-stone-500: var(--text-muted);
+  --color-stone-600: var(--text-body);
+  --color-stone-700: var(--text-heading);
+  --color-stone-800: var(--text-heading);
+  --color-stone-900: var(--text-strong);
+  --color-stone-950: var(--text-strong);
+}
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  /* transparent so the themed decorative background painted on <html>
+     (paper grain / lacquer motif / Đông Sơn drum) shows through */
+  background: transparent;
+  color: var(--text-body);
+}
+
+/* Solid white card surfaces follow the active theme's (warm) --surface-card
+   so cards/headers/tree-nodes sit cohesively on the themed page background.
+   Translucent bg-white/N glass surfaces are left as-is (they tint naturally).
+   Screen only — the print path intentionally keeps pure white. */
+@media screen {
+  .gp-themed .bg-white {
+    background-color: var(--surface-card);
+  }
 }
 
 /* Fix iOS auto-zoom when focusing on inputs */
@@ -53,6 +98,9 @@ select {
     display: none !important;
   }
 
+  /* Reset html too — themed decorative backgrounds (e.g. bronze drum
+     watermark) are painted on <html> and must not bleed into prints. */
+  html,
   body {
     background: white !important;
     color: black !important;

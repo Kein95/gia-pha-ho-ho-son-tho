@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Design-system handoff/reference material (not part of the app build).
+    "Gia Phả Design System/**",
   ]),
 ]);
 

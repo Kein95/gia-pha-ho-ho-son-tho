@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#fafaf9] selection:bg-amber-200 selection:text-amber-900 relative">
+    <div className="min-h-screen flex flex-col selection:bg-amber-200 selection:text-amber-900 relative">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-size-[24px_24px] pointer-events-none"></div>
 
       <Link href="/dashboard" className="btn absolute top-6 left-6 z-20">
@@ -20,7 +20,16 @@ export default function AboutPage() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           className="max-w-3xl w-full"
         >
-          <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-sm border border-stone-200 mb-8 mt-6">
+          {/* Hoành phi gia huấn */}
+          <div className="flex justify-center mb-8 mt-6">
+            <div className="hoanh-phi text-xs sm:text-sm">Uống Nước Nhớ Nguồn</div>
+          </div>
+
+          <div className="orn-frame bg-white rounded-3xl p-8 sm:p-12 shadow-sm border border-stone-200 mb-8 relative">
+            <span className="orn-frame__c orn-frame__c--tl" />
+            <span className="orn-frame__c orn-frame__c--tr" />
+            <span className="orn-frame__c orn-frame__c--bl" />
+            <span className="orn-frame__c orn-frame__c--br" />
             <div className="flex items-center gap-3 mb-6">
               <div className="p-3 bg-amber-100/50 text-amber-700 rounded-2xl">
                 <Info className="size-6" />

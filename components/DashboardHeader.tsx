@@ -24,12 +24,21 @@ export default function DashboardHeader() {
             <h1 className="text-xl sm:text-2xl font-serif font-bold text-stone-800 group-hover:text-amber-700 transition-colors">
               {config.siteName}
             </h1>
+            {/* Ấn triện — gia phả seal */}
+            <span
+              className="seal hidden sm:inline-flex"
+              style={{ width: 30, height: 30, fontSize: 15 }}
+            >
+              譜
+            </span>
           </Link>
         </div>
         <div className="flex items-center gap-4">
           <HeaderMenu />
         </div>
       </div>
+      {/* Gold hồi-văn strip along the header's bottom edge */}
+      <div className="orn-fret" />
     </header>
   );
 }

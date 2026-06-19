@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 const fadeIn: Variants = {
@@ -46,6 +47,17 @@ export default function LandingHero({ siteName }: LandingHeroProps) {
           className="space-y-6 sm:space-y-8 flex flex-col items-center"
           variants={fadeIn}
         >
+          {/* Mặt trống đồng Đông Sơn + hoành phi gia huấn */}
+          <Image
+            src="/trongdong/drum-gold.png"
+            alt="Trống đồng Đông Sơn"
+            width={132}
+            height={132}
+            priority
+            className="size-24 sm:size-32 drop-shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+          />
+          <div className="hoanh-phi text-xs sm:text-sm">Uống Nước Nhớ Nguồn</div>
+
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5rem] font-serif font-bold text-stone-900 tracking-tight leading-[1.1] max-w-4xl">
             <span className="block">{siteName}</span>
           </h1>
@@ -54,6 +66,10 @@ export default function LandingHero({ siteName }: LandingHeroProps) {
             Gìn giữ và lưu truyền những giá trị, cội nguồn và truyền thống tốt
             đẹp của dòng họ cho các thế hệ mai sau.
           </p>
+
+          <div className="orn-rule max-w-xs">
+            <span className="orn-rule__dot" />
+          </div>
         </motion.div>
 
         <motion.div
@@ -75,7 +91,17 @@ export default function LandingHero({ siteName }: LandingHeroProps) {
         </motion.div>
 
         <motion.div
-          className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-left  border-t border-stone-200/50 relative"
+          className="mt-24 flex flex-col items-center gap-4"
+          variants={fadeIn}
+        >
+          <span className="orn-eyebrow">Tính năng</span>
+          <div className="orn-rule max-w-sm">
+            <span className="orn-rule__dot" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-left relative"
           variants={staggerContainer}
         >
           {[
@@ -99,8 +125,13 @@ export default function LandingHero({ siteName }: LandingHeroProps) {
               key={idx}
               variants={fadeIn}
               whileHover={{ y: -5 }}
-              className="bg-white/70 backdrop-blur-xl p-8 rounded-3xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:bg-white transition-all duration-500 flex flex-col items-start group relative overflow-hidden"
+              className="orn-frame bg-white/70 backdrop-blur-xl p-8 rounded-3xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:bg-white transition-all duration-500 flex flex-col items-start group relative overflow-hidden"
             >
+              {/* Khung góc vàng */}
+              <span className="orn-frame__c orn-frame__c--tl" />
+              <span className="orn-frame__c orn-frame__c--tr" />
+              <span className="orn-frame__c orn-frame__c--bl" />
+              <span className="orn-frame__c orn-frame__c--br" />
               <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-amber-100/50 to-transparent rounded-bl-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
               <div className="p-3.5 bg-white rounded-2xl mb-6 shadow-sm ring-1 ring-stone-100 group-hover:scale-110 group-hover:shadow-md transition-all duration-300 relative z-10">
