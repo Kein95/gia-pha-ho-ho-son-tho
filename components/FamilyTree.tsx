@@ -165,7 +165,6 @@ export default function FamilyTree({
                     isRingVisible={idx === 0}
                     isPlusVisible={idx > 0}
                     person={spouseData.person}
-                    note={spouseData.note}
                   />
                 </div>
               ))}

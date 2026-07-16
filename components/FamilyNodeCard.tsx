@@ -1,24 +1,18 @@
 "use client";
 
 import { Person } from "@/types";
-import { Minus, Plus } from "lucide-react";
 import Image from "next/image";
 import { useDashboard } from "./DashboardContext";
 import DefaultAvatar from "./DefaultAvatar";
 
 interface FamilyNodeCardProps {
   person: Person;
-  note?: string | null;
-  isExpandable?: boolean;
-  isExpanded?: boolean;
   isRingVisible?: boolean;
   isPlusVisible?: boolean;
 }
 
 export default function FamilyNodeCard({
   person,
-  isExpandable = false,
-  isExpanded = false,
   isRingVisible = false,
   isPlusVisible = false,
 }: FamilyNodeCardProps) {
@@ -52,17 +46,6 @@ export default function FamilyNodeCard({
           `}
         >
           <span className="leading-none">+</span>
-        </div>
-      )}
-
-      {/* Expand/Collapse Indicator */}
-      {isExpandable && (
-        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white border border-stone-200/80 rounded-full size-6 flex items-center justify-center shadow-md z-100 text-stone-500 hover:text-amber-600 transition-colors">
-          {isExpanded ? (
-            <Minus className="w-3.5 h-3.5" />
-          ) : (
-            <Plus className="w-3.5 h-3.5" />
-          )}
         </div>
       )}
 
