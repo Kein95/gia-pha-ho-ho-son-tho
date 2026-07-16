@@ -1,6 +1,8 @@
 import FamilyStats from "@/components/FamilyStats";
 import { db } from "@/lib/db";
 import { persons, relationships } from "@/lib/db/schema";
+import { canSeeSensitive } from "@/lib/auth/permissions";
+import { sanitizePersons } from "@/lib/person-visibility";
 import { Person, Relationship } from "@/types";
 
 export const metadata = {
@@ -13,29 +15,33 @@ export default async function StatsPage() {
     db.select().from(relationships),
   ]);
 
-  const personsData: Person[] = personsRows.map((p) => ({
-    id: p.id,
-    full_name: p.fullName,
-    gender: p.gender,
-    birth_year: p.birthYear ?? null,
-    birth_month: p.birthMonth ?? null,
-    birth_day: p.birthDay ?? null,
-    death_year: p.deathYear ?? null,
-    death_month: p.deathMonth ?? null,
-    death_day: p.deathDay ?? null,
-    death_lunar_year: p.deathLunarYear ?? null,
-    death_lunar_month: p.deathLunarMonth ?? null,
-    death_lunar_day: p.deathLunarDay ?? null,
-    is_deceased: p.isDeceased,
-    is_in_law: p.isInLaw,
-    birth_order: p.birthOrder ?? null,
-    generation: p.generation ?? null,
-    other_names: p.otherNames ?? null,
-    avatar_url: p.avatarUrl ?? null,
-    note: p.note ?? null,
-    created_at: p.createdAt.toISOString(),
-    updated_at: p.updatedAt.toISOString(),
-  }));
+  // Lọc ngay tại nguồn: không để tồn tại mảng chưa lọc nào ở dưới
+  const personsData: Person[] = sanitizePersons(
+    personsRows.map((p) => ({
+      id: p.id,
+      full_name: p.fullName,
+      gender: p.gender,
+      birth_year: p.birthYear ?? null,
+      birth_month: p.birthMonth ?? null,
+      birth_day: p.birthDay ?? null,
+      death_year: p.deathYear ?? null,
+      death_month: p.deathMonth ?? null,
+      death_day: p.deathDay ?? null,
+      death_lunar_year: p.deathLunarYear ?? null,
+      death_lunar_month: p.deathLunarMonth ?? null,
+      death_lunar_day: p.deathLunarDay ?? null,
+      is_deceased: p.isDeceased,
+      is_in_law: p.isInLaw,
+      birth_order: p.birthOrder ?? null,
+      generation: p.generation ?? null,
+      other_names: p.otherNames ?? null,
+      avatar_url: p.avatarUrl ?? null,
+      note: p.note ?? null,
+      created_at: p.createdAt.toISOString(),
+      updated_at: p.updatedAt.toISOString(),
+    })),
+    await canSeeSensitive(),
+  );
 
   const relationshipsData: Relationship[] = relsRows.map((r) => ({
     id: r.id,

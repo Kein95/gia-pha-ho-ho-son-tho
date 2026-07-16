@@ -6,7 +6,9 @@ import {
   requireEditor,
   requireAdmin,
   getCurrentUser,
+  canSeeSensitive,
 } from "@/lib/auth/permissions";
+import { sanitizePerson } from "@/lib/person-visibility";
 import { eq, ilike, ne, desc, or, and, inArray, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { Person } from "@/types";
@@ -90,15 +92,20 @@ export async function getPersonRelationships(personId: string) {
   const toIso = (d: Date | string | null | undefined) =>
     d instanceof Date ? d.toISOString() : (d ?? null);
 
+  const canSee = await canSeeSensitive();
+  const mapTarget = (t: (typeof relsAsA)[number]["target"]) =>
+    sanitizePerson(
+      {
+        ...t,
+        created_at: toIso(t.created_at),
+        updated_at: toIso(t.updated_at),
+      } as Person,
+      canSee,
+    );
+
   return {
-    relsAsA: relsAsA.map((r) => ({
-      ...r,
-      target: { ...r.target, created_at: toIso(r.target.created_at), updated_at: toIso(r.target.updated_at) },
-    })),
-    relsAsB: relsAsB.map((r) => ({
-      ...r,
-      target: { ...r.target, created_at: toIso(r.target.created_at), updated_at: toIso(r.target.updated_at) },
-    })),
+    relsAsA: relsAsA.map((r) => ({ ...r, target: mapTarget(r.target) })),
+    relsAsB: relsAsB.map((r) => ({ ...r, target: mapTarget(r.target) })),
   };
 }
 
@@ -135,6 +142,7 @@ export async function getChildrenMarriages(childrenIds: string[]) {
     .where(inArray(persons.id, Array.from(allIds)));
 
   const personMap = new Map(personRows.map((p) => [p.id, p]));
+  const canSee = await canSeeSensitive();
 
   return rawMarriages.map((r) => {
     const aRow = personMap.get(r.personA);
@@ -145,8 +153,8 @@ export async function getChildrenMarriages(childrenIds: string[]) {
       note: r.note,
       person_a: r.personA,
       person_b: r.personB,
-      person_a_data: aRow ? mapPersonRow(aRow) : null,
-      person_b_data: bRow ? mapPersonRow(bRow) : null,
+      person_a_data: aRow ? sanitizePerson(mapPersonRow(aRow), canSee) : null,
+      person_b_data: bRow ? sanitizePerson(mapPersonRow(bRow), canSee) : null,
     };
   });
 }
@@ -161,11 +169,15 @@ export async function searchPersons(
     .select()
     .from(persons)
     .where(
-      and(ilike(persons.fullName, `%${searchTerm}%`), ne(persons.id, excludeId)),
+      and(
+        ilike(persons.fullName, `%${searchTerm}%`),
+        ne(persons.id, excludeId),
+      ),
     )
     .limit(5);
 
-  return rows.map(mapPersonRow);
+  const canSee = await canSeeSensitive();
+  return rows.map((r) => sanitizePerson(mapPersonRow(r), canSee));
 }
 
 /** Fetch recently created persons (excluding self) */
@@ -176,7 +188,8 @@ export async function getRecentPersons(excludeId: string): Promise<Person[]> {
     .where(ne(persons.id, excludeId))
     .orderBy(desc(persons.createdAt))
     .limit(10);
-  return rows.map(mapPersonRow);
+  const canSee = await canSeeSensitive();
+  return rows.map((r) => sanitizePerson(mapPersonRow(r), canSee));
 }
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
@@ -297,7 +310,8 @@ export async function upsertPerson(input: {
 }) {
   await requireEditor();
 
-  const { id, phoneNumber, occupation, currentResidence, ...personFields } = input;
+  const { id, phoneNumber, occupation, currentResidence, ...personFields } =
+    input;
 
   try {
     let personId: string;
@@ -353,7 +367,11 @@ export async function upsertPerson(input: {
 
 /** Apply computed generation + birth_order bulk updates */
 export async function applyLineageUpdates(
-  updates: { id: string; generation: number | null; birthOrder: number | null }[],
+  updates: {
+    id: string;
+    generation: number | null;
+    birthOrder: number | null;
+  }[],
 ) {
   await requireAdmin();
   try {
@@ -385,7 +403,8 @@ export async function getPersonById(id: string): Promise<Person | null> {
     .from(persons)
     .where(eq(persons.id, id))
     .limit(1);
-  return row ? mapPersonRow(row) : null;
+  if (!row) return null;
+  return sanitizePerson(mapPersonRow(row), await canSeeSensitive());
 }
 
 /** Fetch private details for a person (admin only) */
@@ -422,10 +441,7 @@ export async function upsertCustomEvent(input: {
         .where(eq(customEvents.id, input.id))
         .limit(1);
 
-      if (
-        existing?.createdBy !== user.id &&
-        user.role !== "admin"
-      ) {
+      if (existing?.createdBy !== user.id && user.role !== "admin") {
         return { error: "Bạn không có quyền chỉnh sửa sự kiện này." };
       }
 
@@ -504,7 +520,9 @@ function mapPersonRow(p: any): Person {
     other_names: p.otherNames ?? null,
     avatar_url: p.avatarUrl ?? null,
     note: p.note ?? null,
-    created_at: p.createdAt instanceof Date ? p.createdAt.toISOString() : p.createdAt,
-    updated_at: p.updatedAt instanceof Date ? p.updatedAt.toISOString() : p.updatedAt,
+    created_at:
+      p.createdAt instanceof Date ? p.createdAt.toISOString() : p.createdAt,
+    updated_at:
+      p.updatedAt instanceof Date ? p.updatedAt.toISOString() : p.updatedAt,
   };
 }

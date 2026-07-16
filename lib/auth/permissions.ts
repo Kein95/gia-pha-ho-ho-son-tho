@@ -32,6 +32,15 @@ export async function requireEditor() {
   return user;
 }
 
+/**
+ * Khách chưa đăng nhập chỉ được xem dữ liệu công khai của người còn sống.
+ * Người đã mất hiển thị đầy đủ — dữ liệu gia phả, không còn là dữ liệu cá nhân.
+ * Dùng kèm sanitizePerson() ở lib/person-visibility.
+ */
+export async function canSeeSensitive() {
+  return (await getCurrentUser()) !== null;
+}
+
 export async function isAdmin() {
   const user = await getCurrentUser();
   return user?.role === "admin";

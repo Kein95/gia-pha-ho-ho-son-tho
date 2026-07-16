@@ -1,12 +1,7 @@
 "use client";
 
 import { motion, Variants } from "framer-motion";
-import {
-  ArrowRight,
-  Network,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
+import { ArrowRight, Network, ShieldCheck, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -62,7 +57,9 @@ export default function LandingHero({
             priority
             className="size-24 sm:size-32 drop-shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
           />
-          <div className="hoanh-phi text-xs sm:text-sm">Uống Nước Nhớ Nguồn</div>
+          <div className="hoanh-phi text-xs sm:text-sm">
+            Uống Nước Nhớ Nguồn
+          </div>
 
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5rem] font-serif font-bold text-stone-900 tracking-tight leading-[1.1] max-w-4xl">
             <span className="block">{siteName}</span>
@@ -94,13 +91,20 @@ export default function LandingHero({
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-16 bg-amber-500/30 blur-2xl rounded-full z-0 hidden sm:block"></div>
 
           <Link
-            href="/login"
+            href="/dashboard/members"
             className="group inline-flex items-center justify-center gap-2 px-8 py-4 sm:px-10 sm:py-5 text-base sm:text-lg font-bold text-white bg-stone-900 border border-stone-800 hover:bg-stone-800 hover:border-stone-700 rounded-2xl shadow-xl shadow-stone-900/10 hover:shadow-2xl hover:shadow-stone-900/20 transition-all duration-300 hover:-translate-y-1 active:translate-y-0 w-full sm:w-auto overflow-hidden relative"
           >
             <span className="relative z-10 flex items-center gap-3">
-              Đăng nhập để xem thông tin
+              Xem cây gia phả
               <ArrowRight className="size-5 group-hover:translate-x-1.5 transition-transform" />
             </span>
+          </Link>
+
+          <Link
+            href="/login"
+            className="relative z-10 text-sm text-stone-500 hover:text-stone-800 underline underline-offset-4 transition-colors"
+          >
+            Đăng nhập để chỉnh sửa
           </Link>
         </motion.div>
 

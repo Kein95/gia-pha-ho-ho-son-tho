@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import LogoutButton from "@/components/LogoutButton";
 import { UserProvider } from "@/components/UserProvider";
 import { getProfile } from "@/lib/auth/queries";
-import { requireAuth } from "@/lib/auth/permissions";
+import { getCurrentUser } from "@/lib/auth/permissions";
 import Link from "next/link";
 import React from "react";
 
@@ -13,10 +13,13 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await requireAuth();
-  const profile = await getProfile(user.id);
+  // Khách chưa đăng nhập vẫn xem được — dữ liệu nhạy cảm đã lọc ở tầng server
+  // (lib/person-visibility). Đăng nhập chỉ để admin/editor chỉnh sửa.
+  const user = await getCurrentUser();
+  const profile = user ? await getProfile(user.id) : null;
 
-  if (!profile?.isActive) {
+  // Chỉ chặn tài khoản đã đăng ký nhưng chưa được duyệt, không chặn khách.
+  if (user && !profile?.isActive) {
     return (
       <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col font-sans">
         <header className="sticky top-0 z-30 bg-white/80 border-b border-stone-200 shadow-sm transition-all duration-200">

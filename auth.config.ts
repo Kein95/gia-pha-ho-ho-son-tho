@@ -8,7 +8,14 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isProtected = nextUrl.pathname.startsWith("/dashboard");
+      // Cây gia phả xem công khai; chỉ khu quản trị mới cần đăng nhập.
+      // Mỗi trang trong danh sách này còn tự gọi requireAdmin() ở server —
+      // đây chỉ là lớp chặn sớm, không phải lớp bảo vệ duy nhất.
+      const isProtected = [
+        "/dashboard/users",
+        "/dashboard/data",
+        "/dashboard/lineage",
+      ].some((p) => nextUrl.pathname.startsWith(p));
       const isLoginPage = nextUrl.pathname.startsWith("/login");
 
       if (isProtected && !isLoggedIn) return false;

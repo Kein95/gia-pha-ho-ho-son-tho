@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 import { persons, customEvents } from "@/lib/db/schema";
+import { canSeeSensitive } from "@/lib/auth/permissions";
+import { sanitizePersons } from "@/lib/person-visibility";
 import { getIsAdmin } from "@/lib/auth/queries";
 import { getTodayLunar } from "@/utils/dateHelpers";
 import { computeEvents } from "@/utils/eventHelpers";
@@ -70,7 +72,10 @@ export default async function DashboardLaunchpad() {
       .from(customEvents),
   ]);
 
-  const allEvents = computeEvents(personsRows, eventsRows);
+  const allEvents = computeEvents(
+    sanitizePersons(personsRows, await canSeeSensitive()),
+    eventsRows,
+  );
   const upcomingEvents = allEvents.filter(
     (e) => e.daysUntil >= 0 && e.daysUntil <= 30,
   );

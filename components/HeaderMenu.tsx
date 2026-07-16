@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, Info, Network, UserCircle } from "lucide-react";
+import { ChevronDown, Info, LogIn, Network, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import LogoutButton from "./LogoutButton";
@@ -56,7 +56,7 @@ export default function HeaderMenu() {
                 Tài khoản
               </p>
               <p className="text-sm font-medium text-stone-900 truncate">
-                {userEmail}
+                {userEmail ?? "Khách"}
               </p>
             </div>
 
@@ -79,7 +79,18 @@ export default function HeaderMenu() {
                 Giới thiệu
               </Link>
 
-              <LogoutButton />
+              {user ? (
+                <LogoutButton />
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-stone-700 hover:text-amber-700 hover:bg-amber-50 transition-colors"
+                >
+                  <LogIn className="size-4" />
+                  Đăng nhập
+                </Link>
+              )}
             </div>
           </motion.div>
         )}

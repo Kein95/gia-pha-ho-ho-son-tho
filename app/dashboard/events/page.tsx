@@ -3,6 +3,8 @@ import EventsList from "@/components/EventsList";
 import MemberDetailModal from "@/components/MemberDetailModal";
 import { db } from "@/lib/db";
 import { persons, customEvents } from "@/lib/db/schema";
+import { canSeeSensitive } from "@/lib/auth/permissions";
+import { sanitizePersons } from "@/lib/person-visibility";
 
 export const metadata = {
   title: "Sự kiện gia phả",
@@ -50,7 +52,10 @@ export default async function EventsPage() {
         </div>
 
         <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-1">
-          <EventsList persons={personsRows} customEvents={eventsRows} />
+          <EventsList
+            persons={sanitizePersons(personsRows, await canSeeSensitive())}
+            customEvents={eventsRows}
+          />
         </main>
       </div>
 

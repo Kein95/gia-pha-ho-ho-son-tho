@@ -27,6 +27,9 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: config.siteName,
   description: config.siteName,
+  // Gia phả nội tộc — xem được qua link, nhưng không cho công cụ tìm kiếm
+  // lập chỉ mục tên thành viên. Xem thêm app/robots.ts.
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({
@@ -38,7 +41,12 @@ export default function RootLayout({
   // choice from localStorage on mount and updates data-theme on <html>.
   // suppressHydrationWarning: the client may swap the theme attribute.
   return (
-    <html lang="vi" data-theme="lacquer" className="gp-themed" suppressHydrationWarning>
+    <html
+      lang="vi"
+      data-theme="lacquer"
+      className="gp-themed"
+      suppressHydrationWarning
+    >
       <body
         className={`${inter.variable} ${playfair.variable} ${notoSerif.variable} font-sans antialiased relative`}
       >
