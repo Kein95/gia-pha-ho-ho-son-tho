@@ -32,9 +32,13 @@ const staggerContainer: Variants = {
 
 interface LandingHeroProps {
   siteName: string;
+  siteLocation: string;
 }
 
-export default function LandingHero({ siteName }: LandingHeroProps) {
+export default function LandingHero({
+  siteName,
+  siteLocation,
+}: LandingHeroProps) {
   return (
     <>
       <motion.div
@@ -61,6 +65,10 @@ export default function LandingHero({ siteName }: LandingHeroProps) {
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5rem] font-serif font-bold text-stone-900 tracking-tight leading-[1.1] max-w-4xl">
             <span className="block">{siteName}</span>
           </h1>
+
+          <p className="text-base sm:text-lg text-stone-700 font-serif max-w-2xl mx-auto leading-relaxed">
+            {siteLocation}
+          </p>
 
           <p className="text-lg sm:text-xl md:text-2xl text-stone-600 max-w-2xl mx-auto leading-relaxed font-light">
             Gìn giữ và lưu truyền những giá trị, cội nguồn và truyền thống tốt

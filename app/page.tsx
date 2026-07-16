@@ -29,7 +29,10 @@ export default function HomePage() {
       </div>
 
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-20 md:py-32 relative z-10 w-full">
-        <LandingHero siteName={config.siteName} />
+        <LandingHero
+          siteName={config.siteName}
+          siteLocation={config.siteLocation}
+        />
       </main>
 
       <Footer className="bg-transparent relative z-10 border-none" />
