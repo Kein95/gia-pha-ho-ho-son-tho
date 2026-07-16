@@ -4,6 +4,7 @@ import { useDashboard } from "@/components/DashboardContext";
 import DashboardMemberList from "@/components/DashboardMemberList";
 import RootSelector from "@/components/RootSelector";
 import { Person, Relationship } from "@/types";
+import { Home } from "lucide-react";
 import { useMemo } from "react";
 import dynamic from "next/dynamic";
 
@@ -21,7 +22,7 @@ export default function DashboardViews({
   relationships,
   canEdit = false,
 }: DashboardViewsProps) {
-  const { view: currentView, rootId } = useDashboard();
+  const { view: currentView, rootId, setRootId } = useDashboard();
 
   // Prepare map and roots for tree views
   const { personsMap, roots, defaultRootId } = useMemo(() => {
@@ -67,7 +68,21 @@ export default function DashboardViews({
       <main className="flex-1 overflow-auto bg-stone-50/50 flex flex-col">
         {currentView !== "list" && persons.length > 0 && activeRootId && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 w-full flex flex-col sm:flex-row flex-wrap items-center sm:justify-between gap-4 relative z-20">
-            <RootSelector persons={persons} currentRootId={activeRootId} />
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <RootSelector persons={persons} currentRootId={activeRootId} />
+              {/* Chỉ hiện khi đang đứng ở nhánh con — setRootId(null) rơi về
+                  gốc mặc định (xem fallback ở trên). */}
+              {rootId && (
+                <button
+                  onClick={() => setRootId(null)}
+                  title="Về cây đầy đủ"
+                  className="shrink-0 flex items-center gap-1.5 px-3 py-2 mt-auto bg-white text-stone-600 rounded-xl border border-stone-200 hover:bg-stone-50 hover:text-stone-900 text-sm font-medium shadow-sm transition-colors"
+                >
+                  <Home className="size-4" />
+                  <span className="hidden sm:inline">Về gốc</span>
+                </button>
+              )}
+            </div>
             <div
               id="tree-toolbar-portal"
               className="flex items-center gap-2 flex-wrap justify-center"

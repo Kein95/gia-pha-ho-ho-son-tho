@@ -2,10 +2,20 @@
 
 import MemberDetailContent from "@/components/MemberDetailContent";
 import MemberForm from "@/components/MemberForm";
-import { getPersonById, getPersonPrivateDetails } from "@/app/actions/relationship";
+import {
+  getPersonById,
+  getPersonPrivateDetails,
+} from "@/app/actions/relationship";
 import { Person } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertCircle, ArrowLeft, Edit2, ExternalLink, X } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Edit2,
+  ExternalLink,
+  GitBranch,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -18,6 +28,8 @@ export default function MemberDetailModal() {
     setMemberModalId,
     showCreateMember,
     setShowCreateMember,
+    rootId,
+    setRootId,
   } = useDashboard();
   const { isAdmin, isEditor: canEdit } = useUser();
   const router = useRouter();
@@ -28,7 +40,10 @@ export default function MemberDetailModal() {
   const [error, setError] = useState<string | null>(null);
 
   const [person, setPerson] = useState<Person | null>(null);
-  const [privateData, setPrivateData] = useState<Record<string, unknown> | null>(null);
+  const [privateData, setPrivateData] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
 
   const closeModal = () => {
     setMemberModalId(null);
@@ -66,9 +81,7 @@ export default function MemberDetailModal() {
         }
       } catch (err) {
         console.error("Error fetching member details:", err);
-        setError(
-          (err as Error)?.message || "Đã xảy ra lỗi hệ thống.",
-        );
+        setError((err as Error)?.message || "Đã xảy ra lỗi hệ thống.");
       } finally {
         setLoading(false);
       }
@@ -162,23 +175,41 @@ export default function MemberDetailModal() {
                   <span className="hidden sm:inline">Quay lại</span>
                 </button>
               ) : (
-                canEdit &&
                 person && (
                   <>
-                    <Link
-                      href={`/dashboard/members/${person.id}`}
-                      className="flex items-center gap-1.5 px-4 py-2 bg-amber-100/80 text-amber-800 rounded-full hover:bg-amber-200 font-semibold text-sm shadow-sm border border-amber-200/50 transition-colors"
-                    >
-                      <ExternalLink className="size-4" />
-                      <span className="hidden sm:inline">Xem</span>
-                    </Link>
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className="flex items-center gap-1.5 px-4 py-2 bg-amber-100/80 text-amber-800 rounded-full hover:bg-amber-200 font-semibold text-sm shadow-sm border border-amber-200/50 transition-colors"
-                    >
-                      <Edit2 className="size-4" />
-                      <span className="hidden sm:inline">Chỉnh sửa</span>
-                    </button>
+                    {/* Đổi gốc sơ đồ sang người này — hành vi xem, nên khách
+                        chưa đăng nhập cũng dùng được. Ẩn khi đã là gốc. */}
+                    {rootId !== person.id && (
+                      <button
+                        onClick={() => {
+                          setRootId(person.id);
+                          setMemberModalId(null);
+                        }}
+                        title="Lấy người này làm gốc sơ đồ"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-stone-100/80 text-stone-700 rounded-full hover:bg-stone-200 font-semibold text-sm shadow-sm border border-stone-200/50 transition-colors"
+                      >
+                        <GitBranch className="size-4" />
+                        <span className="hidden sm:inline">Xem nhánh này</span>
+                      </button>
+                    )}
+                    {canEdit && (
+                      <>
+                        <Link
+                          href={`/dashboard/members/${person.id}`}
+                          className="flex items-center gap-1.5 px-4 py-2 bg-amber-100/80 text-amber-800 rounded-full hover:bg-amber-200 font-semibold text-sm shadow-sm border border-amber-200/50 transition-colors"
+                        >
+                          <ExternalLink className="size-4" />
+                          <span className="hidden sm:inline">Xem</span>
+                        </Link>
+                        <button
+                          onClick={() => setIsEditing(true)}
+                          className="flex items-center gap-1.5 px-4 py-2 bg-amber-100/80 text-amber-800 rounded-full hover:bg-amber-200 font-semibold text-sm shadow-sm border border-amber-200/50 transition-colors"
+                        >
+                          <Edit2 className="size-4" />
+                          <span className="hidden sm:inline">Chỉnh sửa</span>
+                        </button>
+                      </>
+                    )}
                   </>
                 )
               )}
@@ -216,7 +247,9 @@ export default function MemberDetailModal() {
                 </h2>
                 <MemberForm
                   initialData={
-                    formInitialData as Parameters<typeof MemberForm>[0]["initialData"]
+                    formInitialData as Parameters<
+                      typeof MemberForm
+                    >[0]["initialData"]
                   }
                   isEditing={true}
                   isAdmin={isAdmin}
