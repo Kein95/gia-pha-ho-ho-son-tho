@@ -32,6 +32,7 @@ export default function HomePage() {
         <LandingHero
           siteName={config.siteName}
           siteLocation={config.siteLocation}
+          siteLocationNew={config.siteLocationNew}
         />
       </main>
 

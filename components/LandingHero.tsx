@@ -33,11 +33,13 @@ const staggerContainer: Variants = {
 interface LandingHeroProps {
   siteName: string;
   siteLocation: string;
+  siteLocationNew: string;
 }
 
 export default function LandingHero({
   siteName,
   siteLocation,
+  siteLocationNew,
 }: LandingHeroProps) {
   return (
     <>
@@ -68,6 +70,10 @@ export default function LandingHero({
 
           <p className="text-base sm:text-lg text-stone-700 font-serif max-w-2xl mx-auto leading-relaxed">
             {siteLocation}
+            <br />
+            <span className="text-sm sm:text-base text-stone-500">
+              (nay là {siteLocationNew})
+            </span>
           </p>
 
           <p className="text-lg sm:text-xl md:text-2xl text-stone-600 max-w-2xl mx-auto leading-relaxed font-light">
