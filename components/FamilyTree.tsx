@@ -156,7 +156,7 @@ export default function FamilyTree({
           <div
             className={`flex relative z-10 items-stretch h-full${showAvatar ? " bg-white rounded-2xl shadow-md border border-stone-200/80 transition-opacity" : ""}`}
           >
-            <FamilyNodeCard person={data.person} level={level} />
+            <FamilyNodeCard person={data.person} />
 
             {data.spouses.length > 0 &&
               data.spouses.map((spouseData, idx) => (
@@ -165,9 +165,7 @@ export default function FamilyTree({
                     isRingVisible={idx === 0}
                     isPlusVisible={idx > 0}
                     person={spouseData.person}
-                    role={spouseData.person.gender === "male" ? "Chồng" : "Vợ"}
                     note={spouseData.note}
-                    level={level}
                   />
                 </div>
               ))}

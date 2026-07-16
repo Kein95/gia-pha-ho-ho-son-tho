@@ -8,21 +8,15 @@ import DefaultAvatar from "./DefaultAvatar";
 
 interface FamilyNodeCardProps {
   person: Person;
-  role?: string; // e.g., "Chồng", "Vợ"
   note?: string | null;
-  onClickCard?: () => void;
-  onClickName?: (e: React.MouseEvent) => void;
   isExpandable?: boolean;
   isExpanded?: boolean;
   isRingVisible?: boolean;
   isPlusVisible?: boolean;
-  level: number;
 }
 
 export default function FamilyNodeCard({
   person,
-  onClickCard,
-  onClickName,
   isExpandable = false,
   isExpanded = false,
   isRingVisible = false,
@@ -34,7 +28,6 @@ export default function FamilyNodeCard({
 
   const content = (
     <div
-      onClick={onClickCard}
       className={`
         group py-2 px-1 flex flex-col items-center justify-start transition-all duration-300 hover:-translate-y-1 rounded-2xl relative h-full
         ${isDeceased ? "grayscale-[0.4] opacity-80" : ""}
@@ -107,18 +100,8 @@ export default function FamilyNodeCard({
       {/* 2. Gender Icon + Name */}
       <div className="flex flex-col items-center justify-center gap-1 w-full px-0.5 sm:px-1 relative z-10">
         <div
-          className={`
-            text-[10px] sm:text-[11px] md:text-xs font-bold text-center leading-tight transition-colors cursor-pointer
-            ${onClickName ? "text-stone-800 group-hover:text-amber-700 hover:underline" : "text-stone-800 group-hover:text-amber-800"}
-          `}
+          className="text-[10px] sm:text-[11px] md:text-xs font-bold text-center leading-tight transition-colors cursor-pointer text-stone-800 group-hover:text-amber-800"
           title={person.full_name}
-          onClick={(e) => {
-            if (onClickName) {
-              e.stopPropagation();
-              e.preventDefault();
-              onClickName(e);
-            }
-          }}
         >
           {showAvatar
             ? person.full_name
@@ -131,10 +114,6 @@ export default function FamilyNodeCard({
       </div>
     </div>
   );
-
-  if (onClickCard || onClickName) {
-    return content;
-  }
 
   return (
     <button onClick={() => setMemberModalId(person.id)} className="block w-fit">
