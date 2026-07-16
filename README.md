@@ -1,8 +1,8 @@
-# Gia Phả Họ Hồ - Kỳ Sơn
+# Gia Phả Họ Hồ - Sơn Thọ
 
-Repository: [github.com/Kein95/gia-pha-ho-ho-ky-son](https://github.com/Kein95/gia-pha-ho-ho-ky-son)
+Repository: [github.com/Kein95/gia-pha-ho-ho-son-tho](https://github.com/Kein95/gia-pha-ho-ho-son-tho)
 
-Ứng dụng quản lý gia phả dòng Họ Hồ - Kỳ Sơn, cung cấp giao diện trực quan để xem sơ đồ phả hệ, quản lý thành viên (cả nam và nữ) và tìm kiếm danh xưng.
+Ứng dụng quản lý gia phả dòng Họ Hồ - Sơn Thọ, cung cấp giao diện trực quan để xem sơ đồ phả hệ, quản lý thành viên (cả nam và nữ) và tìm kiếm danh xưng.
 
 Dự án ra đời từ nhu cầu thực tế: cần một hệ thống Cloud để con cháu ở nhiều nơi có thể cùng cập nhật thông tin (kết hôn, sinh con...), thay vì phụ thuộc vào một máy cục bộ. Việc tự triển khai mã nguồn mở giúp gia đình nắm trọn quyền kiểm soát dữ liệu nhạy cảm, thay vì phó mặc cho các dịch vụ bên thứ ba.
 
@@ -20,7 +20,7 @@ Dự án này được phát triển dựa trên mã nguồn mở **[giapha-os](
 >
 > P/S: Mình cũng thấy có nhiều bài viết chia sẻ trong nhóm sản phẩm trau chuốt hơn, nhưng mình dùng thử thì cảm giác không làm chủ được, có thể các bạn dùng app của mình cũng thấy vậy, ai làm ra thì người đấy hiểu nhất, thôi thì mình cứ chia sẻ biết đâu phù hợp với người này người kia. Vui vẻ nhé mọi người.
 
-**Customizations cho Họ Hồ - Kỳ Sơn:**
+**Customizations cho Họ Hồ - Sơn Thọ:**
 
 - Liệt kê đầy đủ cả nam và nữ trong phả hệ
 - Tối ưu mobile + chế độ in cây gia phả
@@ -54,7 +54,7 @@ Dự án này được phát triển dựa trên mã nguồn mở **[giapha-os](
 
 Demo của project gốc giapha-os: [giapha-os.homielab.com](https://giapha-os.homielab.com) (account: `giaphaos@homielab.com` / `giaphaos`).
 
-Bản Họ Hồ - Kỳ Sơn này dùng nội bộ gia tộc, không public demo.
+Bản Họ Hồ - Sơn Thọ này dùng nội bộ gia tộc, không public demo.
 
 ## Hình ảnh Giao diện
 
@@ -96,15 +96,15 @@ Stack mới: **Vercel + Neon Postgres + Auth.js + Vercel Blob** (1 dashboard duy
 2. Vào project Vercel → **Settings → Environment Variables**, add:
    - `AUTH_SECRET` = (giá trị vừa generate, all environments)
    - `AUTH_URL` = `http://localhost:3000` (chỉ Development)
-   - `SITE_NAME` = `Gia Phả Họ Hồ - Kỳ Sơn`
+   - `SITE_NAME` = `Gia Phả Họ Hồ - Sơn Thọ`
 
 ### Bước 3 — Chạy local
 
 Yêu cầu: [Node.js](https://nodejs.org/en) + [Bun](https://bun.sh/)
 
 ```bash
-git clone https://github.com/Kein95/gia-pha-ho-ho-ky-son.git
-cd gia-pha-ho-ho-ky-son
+git clone https://github.com/Kein95/gia-pha-ho-ho-son-tho.git
+cd gia-pha-ho-ho-son-tho
 bun install
 
 # Pull env vars từ Vercel về .env.local
