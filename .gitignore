@@ -37,6 +37,15 @@ yarn-error.log*
 # source data (photos/videos) + digitized family data — keep private (repo is public)
 anh goc data/
 plans/260619-1933-digitize-genealogy/
+# bản nháp ~180 tên tới đời 7 đọc từ ảnh gốc — cùng loại dữ liệu riêng tư như trên
+gia_pha_ho_ho_ban_nhap.md
+
+# tài sản đồ hoạ tải về: bộ vector của bên thứ ba + gói handoff design system.
+# Repo public nên đẩy lên là phát tán bản quyền của người khác. Giữ nguyên trên đĩa.
+710781917_4514911198791309_3233923042771460760_n.jpg
+Bộ 12 Vector Hoa Văn Trống Đồng Đông Sơn/
+Gia Phả Design System/
+Gia Phả Design System.zip
 
 # vercel
 .vercel
