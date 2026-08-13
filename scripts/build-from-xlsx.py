@@ -134,6 +134,39 @@ for r in range(3, ws.max_row + 1):
     # nếu không tên và không phối ngẫu -> dòng cách, bỏ qua
 
 # ---------------------------------------------------------------------------
+# 0) Lan truyền cột H từ "hàng chốt" sang anh em cùng nhóm
+# ---------------------------------------------------------------------------
+# Cột H (Cha/Mẹ) chỉ điền ở hàng chốt mỗi nhóm. Các anh em ruột liền kề
+# phía sau, CÙNG đời (cột E) và không có cột H riêng, sẽ kế thừa cha/mẹ của
+# hàng chốt. Dừng khi gặp: dòng cách (gap theo số dòng thực), hàng chốt mới
+# (có cột H riêng), hoặc đổi đời (cột E khác).
+
+_named_rows = [rr for rr in raw_rows if rr["name"]]
+_named_rows.sort(key=lambda x: x["row"])
+
+_i = 0
+while _i < len(_named_rows):
+    _anchor = _named_rows[_i]
+    if _anchor["parent_cell"] and _anchor["gen"] is not None:
+        _pc = _anchor["parent_cell"]
+        _g = _anchor["gen"]
+        _j = _i + 1
+        while _j < len(_named_rows):
+            _nxt = _named_rows[_j]
+            # liền kề theo số dòng thực trong sheet (bắt được dòng trống ngăn nhóm)
+            if _nxt["row"] != _named_rows[_j - 1]["row"] + 1:
+                break
+            if _nxt["parent_cell"]:
+                break
+            if _nxt["gen"] != _g:
+                break
+            _nxt["parent_cell"] = _pc
+            _j += 1
+        _i = _j
+    else:
+        _i += 1
+
+# ---------------------------------------------------------------------------
 # Mô hình person (chung cho cả người trong họ & dâu/rể)
 # ---------------------------------------------------------------------------
 
@@ -355,14 +388,49 @@ for rr in raw_rows:
         continue
     p = row_to_primary[rr["row"]]
     tokens = [t.strip() for t in rr["parent_cell"].splitlines() if t.strip()]
-    for tok in tokens:
-        if canonical(tok) in p.canons:
-            continue  # bỏ tự nối
-        parent, ambiguous, cands = resolve_parent(tok, rr["gen"], p)
-        if parent is not None and parent.id != p.id:
-            parent_edges.append((parent, p))
-        elif ambiguous or parent is None:
-            ambiguous_parents.append((rr["row"], tok, cands))
+    # Cột H ghi "Cha\nMẹ". Chỉ nối con với NGƯỜI ĐẦU TIÊN (cha — dòng họ),
+    # mẹ/dâu đã được nối qua quan hệ marriage ở bước 2. Nối cả hai sẽ nhân
+    # đôi cây và biến mẹ thành một gốc nhánh giả.
+    if not tokens:
+        continue
+    tok = tokens[0]
+    if canonical(tok) in p.canons:
+        continue  # bỏ tự nối
+    parent, ambiguous, cands = resolve_parent(tok, rr["gen"], p)
+    if parent is not None and parent.id != p.id:
+        parent_edges.append((parent, p))
+    elif ambiguous or parent is None:
+        ambiguous_parents.append((rr["row"], tok, cands))
+
+
+# ---------------------------------------------------------------------------
+# 3b) Nối trục tổ chính (đời liền kề khi cột H trống)
+# ---------------------------------------------------------------------------
+# Các tổ đời đầu (vd Hồ Khang đời 1, Hồ Tạo đời 2) không có cột H. Nếu một
+# người trong họ có đời ghi rõ (cột E) và ở đời NGAY TRƯỚC có DUY NHẤT một
+# người trong họ, nối họ làm cha. Chỉ áp dụng cho người CHƯA có cha và
+# chỉ trên trục chính (số người ở đời liền trước == 1) để tránh đoán bậy.
+
+already_child_ids = {c.id for _p, c in parent_edges}
+
+def _gen_of(p: Person):
+    return p.gen_recorded if p.gen_recorded is not None else p.gen_final
+
+primaries_by_gen: dict[int, list[Person]] = {}
+for p in primaries:
+    g = _gen_of(p)
+    if g is not None:
+        primaries_by_gen.setdefault(g, []).append(p)
+
+for p in primaries:
+    if p.id in already_child_ids:
+        continue
+    g = _gen_of(p)
+    if g is None or g <= 0:
+        continue
+    prev = primaries_by_gen.get(g - 1, [])
+    if len(prev) == 1 and prev[0].id != p.id:
+        parent_edges.append((prev[0], p))
 
 
 # ---------------------------------------------------------------------------
