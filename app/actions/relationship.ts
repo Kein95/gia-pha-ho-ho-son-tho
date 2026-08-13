@@ -194,6 +194,18 @@ export async function getRecentPersons(excludeId: string): Promise<Person[]> {
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
 
+const VALID_GENDERS = ["male", "female", "other"] as const;
+const VALID_REL_TYPES = ["marriage", "biological_child", "adopted_child"] as const;
+
+function isNonEmptyString(v: unknown): v is string {
+  return typeof v === "string" && v.trim().length > 0;
+}
+
+function isYear(v: unknown): v is number | null | undefined {
+  if (v === null || v === undefined) return true;
+  return typeof v === "number" && Number.isInteger(v) && v >= 0 && v <= 3000;
+}
+
 export async function addRelationship(input: {
   personA: string;
   personB: string;
@@ -201,7 +213,26 @@ export async function addRelationship(input: {
   note?: string | null;
 }) {
   await requireEditor();
+
+  if (!isNonEmptyString(input.personA) || !isNonEmptyString(input.personB)) {
+    return { error: "Thiếu người tham gia mối quan hệ." };
+  }
+  if (input.personA === input.personB) {
+    return { error: "Không thể tạo quan hệ với chính mình." };
+  }
+  if (!VALID_REL_TYPES.includes(input.type)) {
+    return { error: "Loại quan hệ không hợp lệ." };
+  }
+
   try {
+    const [a, b] = await Promise.all([
+      db.select({ id: persons.id }).from(persons).where(eq(persons.id, input.personA)).limit(1),
+      db.select({ id: persons.id }).from(persons).where(eq(persons.id, input.personB)).limit(1),
+    ]);
+    if (!a.length || !b.length) {
+      return { error: "Một trong hai người không tồn tại." };
+    }
+
     await db.insert(relationships).values({
       personA: input.personA,
       personB: input.personB,
@@ -228,6 +259,42 @@ export async function deleteRelationship(relId: string) {
   }
 }
 
+/** Update an existing relationship (type + note). Cannot change the two persons. */
+export async function updateRelationship(input: {
+  relId: string;
+  type: "marriage" | "biological_child" | "adopted_child";
+  note?: string | null;
+}) {
+  await requireEditor();
+  if (!input.relId) return { error: "Thiếu mã quan hệ." };
+
+  try {
+    const [existing] = await db
+      .select({ id: relationships.id })
+      .from(relationships)
+      .where(eq(relationships.id, input.relId))
+      .limit(1);
+
+    if (!existing) {
+      return { error: "Mối quan hệ không tồn tại hoặc đã bị xóa." };
+    }
+
+    await db
+      .update(relationships)
+      .set({
+        type: input.type,
+        note: input.note ?? null,
+      })
+      .where(eq(relationships.id, input.relId));
+
+    revalidatePath("/dashboard/members");
+    return { success: true };
+  } catch (e) {
+    console.error("Error updating relationship:", e);
+    return { error: "Không thể sửa mối quan hệ: " + (e as Error).message };
+  }
+}
+
 /** Create a new person then link via relationship — used by quick-add spouse and bulk-add children */
 export async function createPersonWithRelationship(input: {
   fullName: string;
@@ -243,36 +310,55 @@ export async function createPersonWithRelationship(input: {
   secondParentId?: string | null;
 }) {
   await requireEditor();
+
+  const fullName = input.fullName?.trim();
+  if (!fullName) return { error: "Tên thành viên không được để trống." };
+  if (!VALID_GENDERS.includes(input.gender)) return { error: "Giới tính không hợp lệ." };
+  if (!isYear(input.birthYear)) return { error: "Năm sinh không hợp lệ." };
+  if (!isNonEmptyString(input.existingPersonId)) return { error: "Thiếu người liên kết." };
+  if (!VALID_REL_TYPES.includes(input.type)) return { error: "Loại quan hệ không hợp lệ." };
+
   try {
-    const [newPerson] = await db
-      .insert(persons)
-      .values({
-        fullName: input.fullName.trim(),
-        gender: input.gender,
-        birthYear: input.birthYear ?? null,
-      })
-      .returning({ id: persons.id });
+    const [existing] = await db
+      .select({ id: persons.id })
+      .from(persons)
+      .where(eq(persons.id, input.existingPersonId))
+      .limit(1);
+    if (!existing) return { error: "Người liên kết không tồn tại." };
 
-    if (!newPerson) throw new Error("Không tạo được thành viên mới.");
+    let newId = "";
 
-    const newId = newPerson.id;
-    const pA = input.existingIsA ? input.existingPersonId : newId;
-    const pB = input.existingIsA ? newId : input.existingPersonId;
+    await db.transaction(async (tx) => {
+      const [newPerson] = await tx
+        .insert(persons)
+        .values({
+          fullName,
+          gender: input.gender,
+          birthYear: input.birthYear ?? null,
+        })
+        .returning({ id: persons.id });
 
-    await db.insert(relationships).values({
-      personA: pA,
-      personB: pB,
-      type: input.type,
-      note: input.note ?? null,
-    });
+      if (!newPerson) throw new Error("Không tạo được thành viên mới.");
+      newId = newPerson.id;
 
-    if (input.secondParentId && input.type !== "marriage") {
-      await db.insert(relationships).values({
-        personA: input.secondParentId,
-        personB: newId,
+      const pA = input.existingIsA ? input.existingPersonId : newId;
+      const pB = input.existingIsA ? newId : input.existingPersonId;
+
+      await tx.insert(relationships).values({
+        personA: pA,
+        personB: pB,
         type: input.type,
+        note: input.note ?? null,
       });
-    }
+
+      if (input.secondParentId && input.type !== "marriage") {
+        await tx.insert(relationships).values({
+          personA: input.secondParentId,
+          personB: newId,
+          type: input.type,
+        });
+      }
+    });
 
     revalidatePath("/dashboard/members");
     return { success: true, newPersonId: newId };
@@ -310,14 +396,43 @@ export async function upsertPerson(input: {
 }) {
   await requireEditor();
 
+  const fullName = input.fullName?.trim();
+  if (!fullName) return { error: "Tên thành viên không được để trống." };
+  if (!VALID_GENDERS.includes(input.gender)) return { error: "Giới tính không hợp lệ." };
+  for (const y of [
+    input.birthYear, input.birthMonth, input.birthDay,
+    input.deathYear, input.deathMonth, input.deathDay,
+    input.deathLunarYear, input.deathLunarMonth, input.deathLunarDay,
+  ]) {
+    if (!isYear(y)) return { error: "Ngày tháng không hợp lệ." };
+  }
+  if (
+    input.birthMonth != null && (input.birthMonth < 1 || input.birthMonth > 12) ||
+    input.birthDay != null && (input.birthDay < 1 || input.birthDay > 31) ||
+    input.deathMonth != null && (input.deathMonth < 1 || input.deathMonth > 12) ||
+    input.deathDay != null && (input.deathDay < 1 || input.deathDay > 31) ||
+    input.deathLunarMonth != null && (input.deathLunarMonth < 1 || input.deathLunarMonth > 12) ||
+    input.deathLunarDay != null && (input.deathLunarDay < 1 || input.deathLunarDay > 31)
+  ) {
+    return { error: "Ngày tháng không hợp lệ." };
+  }
+
   const { id, phoneNumber, occupation, currentResidence, ...personFields } =
     input;
+  personFields.fullName = fullName;
 
   try {
     let personId: string;
 
     if (id) {
-      await db.update(persons).set(personFields).where(eq(persons.id, id));
+      const updated = await db
+        .update(persons)
+        .set(personFields)
+        .where(eq(persons.id, id))
+        .returning({ id: persons.id });
+      if (updated.length === 0) {
+        return { error: "Không tìm thấy thành viên để cập nhật." };
+      }
       personId = id;
     } else {
       const [created] = await db

@@ -38,6 +38,7 @@ interface RelationshipExport {
   type: string;
   person_a: string;
   person_b: string;
+  note?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -84,6 +85,7 @@ function sanitizeRelationship(
     type: r.type,
     person_a: r.person_a,
     person_b: r.person_b,
+    note: r.note ?? null,
   };
 }
 
@@ -139,6 +141,7 @@ export async function exportData(
       type: r.type,
       person_a: r.personA,
       person_b: r.personB,
+      note: r.note,
       created_at: r.createdAt.toISOString(),
       updated_at: r.updatedAt.toISOString(),
     }));
@@ -215,57 +218,69 @@ export async function importData(importPayload: {
   }
 
   try {
-    // 1. Delete relationships first (FK constraint)
-    await db.delete(relationships);
-
-    // 2. Delete persons
-    await db.delete(persons);
-
-    // 3. Insert persons in chunks (Drizzle values() accepts array)
     const CHUNK = 200;
     const sanitizedPersons = importPayload.persons.map(sanitizePerson);
-
-    for (let i = 0; i < sanitizedPersons.length; i += CHUNK) {
-      const chunk = sanitizedPersons.slice(i, i + CHUNK);
-      // Map snake_case export format → Drizzle camelCase schema fields
-      await db.insert(persons).values(
-        chunk.map((p) => ({
-          id: p.id,
-          fullName: p.full_name,
-          gender: p.gender,
-          birthYear: p.birth_year,
-          birthMonth: p.birth_month,
-          birthDay: p.birth_day,
-          deathYear: p.death_year,
-          deathMonth: p.death_month,
-          deathDay: p.death_day,
-          deathLunarYear: p.death_lunar_year,
-          deathLunarMonth: p.death_lunar_month,
-          deathLunarDay: p.death_lunar_day,
-          isDeceased: p.is_deceased,
-          isInLaw: p.is_in_law,
-          birthOrder: p.birth_order,
-          generation: p.generation,
-          otherNames: p.other_names,
-          avatarUrl: p.avatar_url,
-          note: p.note,
-        })),
-      );
-    }
-
-    // 4. Insert relationships in chunks
     const sanitizedRels = importPayload.relationships.map(sanitizeRelationship);
 
-    for (let i = 0; i < sanitizedRels.length; i += CHUNK) {
-      const chunk = sanitizedRels.slice(i, i + CHUNK);
-      await db.insert(relationships).values(
-        chunk.map((r) => ({
-          type: r.type as "marriage" | "biological_child" | "adopted_child",
-          personA: r.person_a,
-          personB: r.person_b,
-        })),
-      );
+    // Validate relationships reference existing persons before mutating DB
+    const personIds = new Set(sanitizedPersons.map((p) => p.id));
+    for (const r of sanitizedRels) {
+      if (!personIds.has(r.person_a) || !personIds.has(r.person_b)) {
+        return {
+          error:
+            "File backup có quan hệ trỏ tới người không tồn tại. Vui lòng kiểm tra lại dữ liệu.",
+        };
+      }
     }
+
+    await db.transaction(async (tx) => {
+      // 1. Delete relationships first (FK constraint)
+      await tx.delete(relationships);
+
+      // 2. Delete persons
+      await tx.delete(persons);
+
+      // 3. Insert persons in chunks
+      for (let i = 0; i < sanitizedPersons.length; i += CHUNK) {
+        const chunk = sanitizedPersons.slice(i, i + CHUNK);
+        await tx.insert(persons).values(
+          chunk.map((p) => ({
+            id: p.id,
+            fullName: p.full_name,
+            gender: p.gender,
+            birthYear: p.birth_year,
+            birthMonth: p.birth_month,
+            birthDay: p.birth_day,
+            deathYear: p.death_year,
+            deathMonth: p.death_month,
+            deathDay: p.death_day,
+            deathLunarYear: p.death_lunar_year,
+            deathLunarMonth: p.death_lunar_month,
+            deathLunarDay: p.death_lunar_day,
+            isDeceased: p.is_deceased,
+            isInLaw: p.is_in_law,
+            birthOrder: p.birth_order,
+            generation: p.generation,
+            otherNames: p.other_names,
+            avatarUrl: p.avatar_url,
+            note: p.note,
+          })),
+        );
+      }
+
+      // 4. Insert relationships in chunks
+      for (let i = 0; i < sanitizedRels.length; i += CHUNK) {
+        const chunk = sanitizedRels.slice(i, i + CHUNK);
+        await tx.insert(relationships).values(
+          chunk.map((r) => ({
+            type: r.type as "marriage" | "biological_child" | "adopted_child",
+            personA: r.person_a,
+            personB: r.person_b,
+            note: r.note ?? null,
+          })),
+        );
+      }
+    });
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/members");

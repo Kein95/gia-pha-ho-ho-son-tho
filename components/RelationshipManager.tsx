@@ -7,6 +7,7 @@ import {
   getRecentPersons,
   addRelationship,
   deleteRelationship,
+  updateRelationship,
   createPersonWithRelationship,
 } from "@/app/actions/relationship";
 import { DashboardContext, useDashboard } from "@/components/DashboardContext";
@@ -64,6 +65,13 @@ export default function RelationshipManager({
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Edit relationship state
+  const [editingRel, setEditingRel] = useState<{
+    id: string;
+    type: RelationshipType;
+    note: string;
+  } | null>(null);
 
   // Bulk add state
   const [isAddingBulk, setIsAddingBulk] = useState(false);
@@ -314,6 +322,28 @@ export default function RelationshipManager({
     }
   };
 
+  const handleUpdateRelationship = async () => {
+    if (!editingRel) return;
+    setProcessing(true);
+    setError(null);
+
+    const result = await updateRelationship({
+      relId: editingRel.id,
+      type: editingRel.type,
+      note: editingRel.note.trim() || null,
+    });
+
+    if (result && "error" in result) {
+      setError("Không thể sửa mối quan hệ: " + result.error);
+      setTimeout(() => setError(null), 5000);
+    } else {
+      setEditingRel(null);
+      fetchRelationships();
+      router.refresh();
+    }
+    setProcessing(false);
+  };
+
   // ─── Helpers ───────────────────────────────────────────────────────────────
 
   const groupByType = (type: string) =>
@@ -389,19 +419,39 @@ export default function RelationshipManager({
                       </div>
                     </button>
                     {canEdit && rel.direction !== "child_in_law" && (
-                      <button
-                        onClick={() => handleDelete(rel.id)}
-                        className="text-stone-300 hover:text-red-500 hover:bg-red-50 p-2 sm:p-2.5 rounded-lg transition-colors flex items-center justify-center ml-2"
-                        title="Xóa mối quan hệ"
-                        aria-label="Xóa mối quan hệ"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                          fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                          <line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" />
-                        </svg>
-                      </button>
+                      <>
+                        <button
+                          onClick={() =>
+                            setEditingRel({
+                              id: rel.id,
+                              type: rel.type,
+                              note: rel.note ?? "",
+                            })
+                          }
+                          className="text-stone-300 hover:text-amber-500 hover:bg-amber-50 p-2 sm:p-2.5 rounded-lg transition-colors flex items-center justify-center"
+                          title="Sửa mối quan hệ"
+                          aria-label="Sửa mối quan hệ"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(rel.id)}
+                          className="text-stone-300 hover:text-red-500 hover:bg-red-50 p-2 sm:p-2.5 rounded-lg transition-colors flex items-center justify-center ml-1"
+                          title="Xóa mối quan hệ"
+                          aria-label="Xóa mối quan hệ"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                            <line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" />
+                          </svg>
+                        </button>
+                      </>
                     )}
                   </li>
                 ))}
@@ -413,8 +463,54 @@ export default function RelationshipManager({
         );
       })}
 
+      {/* Edit relationship form */}
+      {canEdit && editingRel && (
+        <div className="mt-4 bg-amber-50/50 p-4 sm:p-5 rounded-xl border border-amber-200 shadow-sm">
+          <h4 className="font-bold text-amber-800 mb-3 text-sm">Sửa Mối Quan Hệ</h4>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-amber-700 mb-1">Loại quan hệ</label>
+              <select
+                value={editingRel.type}
+                onChange={(e) => setEditingRel({ ...editingRel, type: e.target.value as RelationshipType })}
+                className="bg-white text-stone-900 block w-full text-sm rounded-md sm:rounded-lg border-stone-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 p-2 sm:p-2.5 border transition-colors"
+              >
+                <option value="marriage">Vợ / Chồng</option>
+                <option value="biological_child">Con ruột</option>
+                <option value="adopted_child">Con nuôi</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-amber-700 mb-1">Ghi chú (tuỳ chọn)</label>
+              <input
+                type="text"
+                placeholder="VD: Vợ cả, Vợ hai..."
+                value={editingRel.note}
+                onChange={(e) => setEditingRel({ ...editingRel, note: e.target.value })}
+                className="bg-white text-stone-900 placeholder-stone-400 block w-full text-sm rounded-md sm:rounded-lg border-stone-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 p-2 sm:p-2.5 border transition-colors"
+              />
+            </div>
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={handleUpdateRelationship}
+                disabled={processing}
+                className="flex-1 bg-amber-700 text-white py-2 sm:py-2.5 rounded-md sm:rounded-lg text-sm font-medium hover:bg-amber-800 disabled:opacity-50 transition-colors"
+              >
+                {processing ? "Đang lưu..." : "Lưu"}
+              </button>
+              <button
+                onClick={() => setEditingRel(null)}
+                className="px-4 py-2 sm:py-2.5 bg-white border border-stone-300 text-stone-700 rounded-md sm:rounded-lg text-sm hover:bg-stone-50 transition-colors"
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Add buttons */}
-      {canEdit && !isAdding && !isAddingBulk && !isAddingSpouse && (
+      {canEdit && !isAdding && !isAddingBulk && !isAddingSpouse && !editingRel && (
         <div className="flex flex-col sm:flex-row gap-3 mt-4">
           <button onClick={() => setIsAdding(true)}
             className="flex-1 py-3 border-2 border-dashed border-stone-200 bg-stone-50/50 hover:bg-stone-50 rounded-xl sm:rounded-2xl text-stone-500 font-medium text-sm hover:border-amber-400 hover:text-amber-700 transition-all duration-200">
