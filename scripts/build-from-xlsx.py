@@ -340,11 +340,26 @@ def spouse_gender_hint(person: Person) -> str:
 
 
 def ensure_spouse_person(token: str, gender_hint: str, gi: str, row: int) -> Person:
-    hits = lookup(token)
-    if hits:
-        return hits[0]
+    # Chỉ match theo FULL NAME chính xác, không match variants/other_names.
+    # "Thị Lan" ở nhiều dòng có thể là những người khác nhau; match qua
+    # variants (vd "Dương Thị Soan / Thị Lan") sẽ merge nhầm người.
     variants = split_variants(token)
     primary_token = variants[0] if variants else token
+
+    # Token KHÔNG CÓ HỌ (chỉ "Thị X" hoặc một từ) rất dễ trùng — luôn tạo
+    # person mới, không match vào người đã có họ khác.
+    tok_parts = primary_token.split()
+    first_canon = canonical(tok_parts[0]) if tok_parts else ""
+    has_family_name = len(tok_parts) >= 2 and first_canon not in ("thi",)
+
+    if has_family_name:
+        exact = lookup(primary_token)
+        if exact:
+            for cand in exact:
+                if cand.full_name == primary_token:
+                    return cand
+            return exact[0]
+
     p = Person(
         full_name=primary_token,
         gender=gender_hint,
@@ -383,6 +398,21 @@ for rr in raw_rows:
 parent_edges: list[tuple[Person, Person]] = []  # (parent, child)
 ambiguous_parents: list[tuple[int, str, list[str]]] = []
 
+# Map spouse FULL NAME → person, và person → spouses (dùng để phân biệt cha
+# trùng tên). Chỉ map theo full_name, KHÔNG theo variants/other_names để
+# tránh "Thị Lan" bị nhầm thành "Dương Thị Soan / Thị Lan".
+spouse_person_by_canon: dict[str, Person] = {}
+person_spouses: dict[str, list[Person]] = {}
+for a, b in marriage_edges:
+    for x, y in ((a, b), (b, a)):
+        person_spouses.setdefault(x.id, []).append(y)
+        spouse_person_by_canon.setdefault(canonical(y.full_name), []).append(y)
+
+
+def _spouse_of(p: Person) -> list[Person]:
+    return person_spouses.get(p.id, [])
+
+
 for rr in raw_rows:
     if not rr["name"] or not rr["parent_cell"]:
         continue
@@ -397,6 +427,26 @@ for rr in raw_rows:
     if canonical(tok) in p.canons:
         continue  # bỏ tự nối
     parent, ambiguous, cands = resolve_parent(tok, rr["gen"], p)
+
+    # Khi cha trùng tên (ambiguous), dùng TÊN VỢ (token thứ 2 cột H) để chọn
+    # cha có vợ khớp. VD "Hồ Hạnh\nThị Nhung" → cha = chồng của "Mai Thị Nhung".
+    if (parent is None and ambiguous) and len(tokens) > 1:
+        wife_tok = tokens[1]
+        wife_hits = []
+        for wc in spouse_person_by_canon:
+            if canonical(wc).endswith(canonical(wife_tok)) or canonical(wife_tok).endswith(canonical(wc)):
+                wife_hits.extend(spouse_person_by_canon[wc])
+        # wife_hits là các person dâu/rể; tìm chồng (người trong họ) của họ
+        husband_cands: list[Person] = []
+        for w in wife_hits:
+            for h in person_spouses.get(w.id, []):
+                if not h.is_in_law:
+                    husband_cands.append(h)
+        if len(husband_cands) == 1:
+            parent = husband_cands[0]
+            ambiguous = False
+            cands = []
+
     if parent is not None and parent.id != p.id:
         parent_edges.append((parent, p))
     elif ambiguous or parent is None:
