@@ -9,7 +9,7 @@ export default function DashboardHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link
-            href="/dashboard"
+            href="/"
             className="group flex items-center gap-2 sm:gap-3"
           >
             <div className="relative size-8 rounded-lg overflow-hidden shrink-0 border border-stone-200/50 transition-all">
