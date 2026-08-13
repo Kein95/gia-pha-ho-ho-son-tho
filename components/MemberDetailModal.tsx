@@ -165,11 +165,11 @@ export default function MemberDetailModal() {
             className="relative bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col border border-stone-200"
           >
             {/* Header actions */}
-            <div className="absolute top-4 right-4 sm:top-5 sm:right-5 z-20 flex items-center gap-2">
+            <div className="absolute top-4 right-4 sm:top-5 sm:right-5 z-20 flex items-center gap-2 flex-wrap justify-end max-w-[calc(100%-2rem)]">
               {isEditing ? (
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-stone-100/80 text-stone-700 rounded-full hover:bg-stone-200 font-semibold text-sm shadow-sm border border-stone-200/50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-stone-100/80 text-stone-700 rounded-full hover:bg-stone-200 font-semibold text-sm shadow-sm border border-stone-200/50 transition-colors"
                 >
                   <ArrowLeft className="size-4" />
                   <span className="hidden sm:inline">Quay lại</span>
@@ -186,7 +186,7 @@ export default function MemberDetailModal() {
                           setMemberModalId(null);
                         }}
                         title="Lấy người này làm gốc sơ đồ"
-                        className="flex items-center gap-1.5 px-4 py-2 bg-stone-100/80 text-stone-700 rounded-full hover:bg-stone-200 font-semibold text-sm shadow-sm border border-stone-200/50 transition-colors"
+                        className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-stone-100/80 text-stone-700 rounded-full hover:bg-stone-200 font-semibold text-sm shadow-sm border border-stone-200/50 transition-colors"
                       >
                         <GitBranch className="size-4" />
                         <span className="hidden sm:inline">Xem nhánh này</span>
@@ -196,14 +196,14 @@ export default function MemberDetailModal() {
                       <>
                         <Link
                           href={`/dashboard/members/${person.id}`}
-                          className="flex items-center gap-1.5 px-4 py-2 bg-amber-100/80 text-amber-800 rounded-full hover:bg-amber-200 font-semibold text-sm shadow-sm border border-amber-200/50 transition-colors"
+                          className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-amber-100/80 text-amber-800 rounded-full hover:bg-amber-200 font-semibold text-sm shadow-sm border border-amber-200/50 transition-colors"
                         >
                           <ExternalLink className="size-4" />
                           <span className="hidden sm:inline">Xem</span>
                         </Link>
                         <button
                           onClick={() => setIsEditing(true)}
-                          className="flex items-center gap-1.5 px-4 py-2 bg-amber-100/80 text-amber-800 rounded-full hover:bg-amber-200 font-semibold text-sm shadow-sm border border-amber-200/50 transition-colors"
+                          className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-amber-100/80 text-amber-800 rounded-full hover:bg-amber-200 font-semibold text-sm shadow-sm border border-amber-200/50 transition-colors"
                         >
                           <Edit2 className="size-4" />
                           <span className="hidden sm:inline">Chỉnh sửa</span>

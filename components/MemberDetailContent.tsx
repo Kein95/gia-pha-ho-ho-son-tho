@@ -188,14 +188,14 @@ export default function MemberDetailContent({
                 variants={itemVariants}
                 className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-stone-200/60 shadow-sm transition-all hover:shadow-md hover:border-amber-200/60"
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2">
                     <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></span>
                     <h3 className="text-[11px] font-bold text-stone-400 uppercase tracking-widest">
                       Sinh
                     </h3>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-wrap justify-end">
                     {person.birth_year &&
                       getZodiacAnimal(
                         person.birth_year,

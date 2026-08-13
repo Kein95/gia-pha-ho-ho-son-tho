@@ -1,4 +1,4 @@
-import { MouseEvent, TouchEvent, useCallback, useRef, useState } from "react";
+import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 
 export function usePanZoom(
   containerRef: React.RefObject<HTMLDivElement | null>,
@@ -12,10 +12,17 @@ export function usePanZoom(
 
   // Pinch-to-zoom tracking
   const lastPinchDistRef = useRef<number | null>(null);
+  const lastTouchCountRef = useRef(0);
 
-  const handleZoomIn = () => setScale((s) => Math.min(s + 0.1, 2));
-  const handleZoomOut = () => setScale((s) => Math.max(s - 0.1, 0.3));
-  const handleResetZoom = () => setScale(1);
+  const handleZoomIn = useCallback(
+    () => setScale((s) => Math.min(s + 0.1, 2)),
+    [],
+  );
+  const handleZoomOut = useCallback(
+    () => setScale((s) => Math.max(s - 0.1, 0.3)),
+    [],
+  );
+  const handleResetZoom = useCallback(() => setScale(1), []);
 
   // --- Mouse handlers ---
   const handleMouseDown = (e: MouseEvent<HTMLElement>) => {
@@ -61,36 +68,53 @@ export function usePanZoom(
     }
   };
 
-  // --- Touch handlers (mobile) ---
-  const handleTouchStart = useCallback(
-    (e: TouchEvent<HTMLElement>) => {
-      if (e.touches.length === 1) {
+  // --- Native touch listeners (non-passive so preventDefault works) ---
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const startDrag = (x: number, y: number) => {
+      setIsPressed(true);
+      hasDraggedRef.current = false;
+      setDragStart({ x, y });
+      if (containerRef.current) {
+        setScrollStart({
+          left: containerRef.current.scrollLeft,
+          top: containerRef.current.scrollTop,
+        });
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      const count = e.touches.length;
+      if (count === 1) {
         // Single finger pan
         const touch = e.touches[0];
-        setIsPressed(true);
-        hasDraggedRef.current = false;
-        setDragStart({ x: touch.pageX, y: touch.pageY });
-        if (containerRef.current) {
-          setScrollStart({
-            left: containerRef.current.scrollLeft,
-            top: containerRef.current.scrollTop,
-          });
-        }
-      } else if (e.touches.length === 2) {
+        startDrag(touch.pageX, touch.pageY);
+      } else if (count === 2) {
         // Pinch-to-zoom start
-        const dist = Math.hypot(
+        setIsPressed(false);
+        setIsDragging(false);
+        lastPinchDistRef.current = Math.hypot(
           e.touches[0].pageX - e.touches[1].pageX,
           e.touches[0].pageY - e.touches[1].pageY,
         );
-        lastPinchDistRef.current = dist;
       }
-    },
-    [containerRef],
-  );
+      lastTouchCountRef.current = count;
+    };
 
-  const handleTouchMove = useCallback(
-    (e: TouchEvent<HTMLElement>) => {
-      if (e.touches.length === 1 && isPressed && containerRef.current) {
+    const handleTouchMove = (e: TouchEvent) => {
+      const count = e.touches.length;
+      // Transition 2→1 fingers: resume pan from the remaining finger
+      if (count === 1 && lastTouchCountRef.current === 2) {
+        setIsPressed(false);
+        setIsDragging(false);
+        lastPinchDistRef.current = null;
+        const touch = e.touches[0];
+        startDrag(touch.pageX, touch.pageY);
+      }
+
+      if (count === 1 && isPressed && containerRef.current) {
         const touch = e.touches[0];
         const dx = touch.pageX - dragStart.x;
         const dy = touch.pageY - dragStart.y;
@@ -104,7 +128,7 @@ export function usePanZoom(
           containerRef.current.scrollLeft = scrollStart.left - dx;
           containerRef.current.scrollTop = scrollStart.top - dy;
         }
-      } else if (e.touches.length === 2 && lastPinchDistRef.current !== null) {
+      } else if (count === 2 && lastPinchDistRef.current !== null) {
         // Pinch-to-zoom
         e.preventDefault();
         const dist = Math.hypot(
@@ -120,15 +144,39 @@ export function usePanZoom(
           lastPinchDistRef.current = dist;
         }
       }
-    },
-    [isPressed, dragStart, scrollStart, containerRef],
-  );
+      lastTouchCountRef.current = count;
+    };
 
-  const handleTouchEnd = useCallback(() => {
-    setIsPressed(false);
-    setIsDragging(false);
-    lastPinchDistRef.current = null;
-  }, []);
+    const handleTouchEnd = (e: TouchEvent) => {
+      setIsPressed(false);
+      setIsDragging(false);
+      lastPinchDistRef.current = null;
+      lastTouchCountRef.current = e.touches.length;
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      setScale((s) => {
+        const delta = -e.deltaY * 0.01;
+        return Math.min(Math.max(s + delta, 0.3), 2);
+      });
+    };
+
+    el.addEventListener("touchstart", handleTouchStart, { passive: true });
+    el.addEventListener("touchmove", handleTouchMove, { passive: false });
+    el.addEventListener("touchend", handleTouchEnd);
+    el.addEventListener("touchcancel", handleTouchEnd);
+    el.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => {
+      el.removeEventListener("touchstart", handleTouchStart);
+      el.removeEventListener("touchmove", handleTouchMove);
+      el.removeEventListener("touchend", handleTouchEnd);
+      el.removeEventListener("touchcancel", handleTouchEnd);
+      el.removeEventListener("wheel", handleWheel);
+    };
+  }, [containerRef, isPressed, dragStart, scrollStart]);
 
   return {
     scale,
@@ -142,9 +190,6 @@ export function usePanZoom(
       handleZoomIn,
       handleZoomOut,
       handleResetZoom,
-      handleTouchStart,
-      handleTouchMove,
-      handleTouchEnd,
     },
   };
 }

@@ -43,9 +43,6 @@ export default function FamilyTree({
       handleZoomIn,
       handleZoomOut,
       handleResetZoom,
-      handleTouchStart,
-      handleTouchMove,
-      handleTouchEnd,
     },
   } = usePanZoom(containerRef);
 
@@ -216,15 +213,12 @@ export default function FamilyTree({
 
       <div
         ref={containerRef}
-        className={`w-full h-full overflow-auto bg-stone-50 ${isPressed ? "cursor-grabbing" : "cursor-grab"}`}
+        className={`w-full h-full overflow-auto bg-stone-50 tree-pan-container ${isPressed ? "cursor-grabbing" : "cursor-grab"}`}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUpOrLeave}
         onMouseLeave={handleMouseUpOrLeave}
         onClickCapture={handleClickCapture}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
         onDragStart={(e) => e.preventDefault()}
       >
         {/* We use a style block to inject the CSS logic for the family tree lines */}

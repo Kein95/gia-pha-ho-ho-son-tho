@@ -19,19 +19,30 @@ export default function FamilyNodeCard({
   const { showAvatar, setMemberModalId } = useDashboard();
 
   const isDeceased = person.is_deceased;
+  const birthYear = person.birth_year;
+  const deathYear = person.death_lunar_year || person.death_year;
+
+  const genderIcon =
+    person.gender === "male" ? "♂" : person.gender === "female" ? "♀" : "⚧";
+  const genderColor =
+    person.gender === "male"
+      ? "text-sky-600"
+      : person.gender === "female"
+        ? "text-rose-600"
+        : "text-stone-500";
 
   const content = (
     <div
       className={`
-        group py-2 px-1 flex flex-col items-center justify-start transition-all duration-300 hover:-translate-y-1 rounded-2xl relative h-full
+        group py-2 px-1.5 flex flex-col items-center justify-start transition-all duration-300 hover:-translate-y-1 rounded-2xl relative h-full
         ${isDeceased ? "grayscale-[0.4] opacity-80" : ""}
-        ${showAvatar ? "w-20 sm:w-24 md:w-28 bg-white/70 hover:shadow-xl" : "px-3"}
+        ${showAvatar ? "w-20 sm:w-28 md:w-32 bg-white/70 hover:shadow-xl" : "px-3"}
       `}
     >
       {isRingVisible && (
         <div
           className={`
-            absolute top-[15%] -left-2.5 sm:-left-3.5 size-5 sm:size-6 rounded-full z-100 flex items-center justify-center text-[10px] sm:text-sm font-medium text-stone-500
+            absolute top-[15%] -left-2.5 sm:-left-3.5 size-5 sm:size-6 rounded-full z-10 flex items-center justify-center text-[10px] sm:text-sm font-medium text-stone-500
             ${showAvatar ? "shadow-sm bg-white" : ""}
           `}
         >
@@ -41,7 +52,7 @@ export default function FamilyNodeCard({
       {isPlusVisible && (
         <div
           className={`
-            absolute top-[15%] -left-2.5 sm:-left-3.5 size-5 sm:size-6 rounded-full z-100 flex items-center justify-center text-[10px] sm:text-sm font-medium text-stone-500
+            absolute top-[15%] -left-2.5 sm:-left-3.5 size-5 sm:size-6 rounded-full z-10 flex items-center justify-center text-[10px] sm:text-sm font-medium text-stone-500
             ${showAvatar ? "shadow-sm bg-white" : ""}
           `}
         >
@@ -54,7 +65,7 @@ export default function FamilyNodeCard({
         <div className="relative z-10 mb-1.5 sm:mb-2">
           <div
             className={`
-              h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 rounded-full flex items-center justify-center text-[10px] sm:text-xs md:text-sm text-white overflow-hidden shrink-0 shadow-lg ring-2 ring-white transition-transform duration-300 group-hover:scale-105
+              h-10 w-10 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-full flex items-center justify-center text-[10px] sm:text-xs md:text-sm text-white overflow-hidden shrink-0 shadow-lg ring-2 ring-white transition-transform duration-300 group-hover:scale-105
               ${
                 person.gender === "male"
                   ? "bg-linear-to-br from-sky-400 to-sky-700"
@@ -80,10 +91,10 @@ export default function FamilyNodeCard({
         </div>
       )}
 
-      {/* 2. Gender Icon + Name */}
-      <div className="flex flex-col items-center justify-center gap-1 w-full px-0.5 sm:px-1 relative z-10">
+      {/* 2. Name */}
+      <div className="flex flex-col items-center justify-center gap-0.5 w-full px-0.5 sm:px-1 relative z-10">
         <div
-          className="text-[10px] sm:text-[11px] md:text-xs font-bold text-center leading-tight transition-colors cursor-pointer text-stone-800 group-hover:text-amber-800"
+          className="text-[10px] sm:text-[11px] md:text-xs font-bold text-center leading-tight transition-colors cursor-pointer text-stone-800 group-hover:text-amber-800 max-w-full"
           title={person.full_name}
         >
           {showAvatar
@@ -94,6 +105,41 @@ export default function FamilyNodeCard({
                 </span>
               ))}
         </div>
+
+        {/* Generation + Gender */}
+        {(person.generation != null || person.gender !== "other") && (
+          <div className="flex items-center justify-center gap-1 flex-wrap mt-0.5">
+            {person.generation != null && (
+              <span className="text-[8px] sm:text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/60 rounded px-1 py-px leading-tight">
+                Đ.{person.generation}
+              </span>
+            )}
+            <span
+              className={`text-[9px] sm:text-[10px] font-bold leading-none ${genderColor}`}
+              title={person.gender === "male" ? "Nam" : person.gender === "female" ? "Nữ" : "Khác"}
+            >
+              {genderIcon}
+            </span>
+          </div>
+        )}
+
+        {/* Birth → Death */}
+        {(birthYear || deathYear) && (
+          <span className="text-[8px] sm:text-[9px] text-stone-500 font-medium leading-tight mt-0.5">
+            {birthYear ?? "…"}
+            {isDeceased ? ` → ${deathYear ?? "…"}` : ""}
+          </span>
+        )}
+
+        {/* Other names */}
+        {person.other_names && (
+          <span
+            className="text-[8px] sm:text-[9px] text-stone-400 italic leading-tight mt-0.5 truncate max-w-full"
+            title={person.other_names}
+          >
+            {person.other_names}
+          </span>
+        )}
       </div>
     </div>
   );

@@ -544,7 +544,7 @@ export default function KinshipFinder({ persons, relationships }: Props) {
                         key={row.relation}
                         className="flex items-start gap-4 px-5 py-3"
                       >
-                        <span className="text-sm font-bold text-amber-700 w-48 shrink-0">
+                        <span className="text-sm font-bold text-amber-700 w-40 sm:w-48 shrink-0">
                           {row.relation}
                         </span>
                         <div className="min-w-0">

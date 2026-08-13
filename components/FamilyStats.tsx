@@ -98,10 +98,10 @@ function GenerationRow({
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs font-bold text-stone-500 w-14 shrink-0">
+      <span className="text-xs font-bold text-stone-500 w-12 sm:w-14 shrink-0">
         Đời {gen}
       </span>
-      <div className="flex-1 h-3 bg-stone-100 rounded-full overflow-hidden flex">
+      <div className="flex-1 min-w-0 h-3 bg-stone-100 rounded-full overflow-hidden flex">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${maleBarPct}%` }}
@@ -118,7 +118,7 @@ function GenerationRow({
         />
       </div>
       <span
-        className="text-xs text-stone-500 w-24 text-right shrink-0"
+        className="text-xs text-stone-500 w-20 sm:w-24 text-right shrink-0"
         title={`Tổng: ${total} | Nam: ${male} (${Math.round(malePct)}%) | Nữ: ${female} (${Math.round(femalePct)}%)`}
       >
         <span className="font-bold text-sm text-stone-700">{total}</span>

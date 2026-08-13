@@ -1,6 +1,5 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { ViewMode } from "./ViewToggle";
 
@@ -22,34 +21,31 @@ export const DashboardContext = createContext<DashboardState | undefined>(
 );
 
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
-  const searchParams = useSearchParams();
   const [memberModalId, setMemberModalId] = useState<string | null>(null);
   const [showCreateMember, setShowCreateMember] = useState(false);
-  const [showAvatar, setShowAvatar] = useState<boolean>(true);
+  const [showAvatar, setShowAvatar] = useState(true);
   const [view, setViewState] = useState<ViewMode>("list");
   const [rootId, setRootIdState] = useState<string | null>(null);
 
-  // Initialize from URL once on mount (or when searchParams actually change from server init)
-  // We use a ref or just simple effect
+  // Sync URL-driven state after mount. Reading window.location avoids a
+  // hydration mismatch: the server renders the default state, then this
+  // effect applies ?view=/?rootId=/?avatar= once on the client. This is
+  // what makes direct ?view=tree loads work.
   useEffect(() => {
-    const avatarParam = searchParams.get("avatar");
-    setShowAvatar(avatarParam !== "hide");
+    const sp = new URLSearchParams(window.location.search);
 
-    const viewParam = searchParams.get("view") as ViewMode;
+    const viewParam = sp.get("view") as ViewMode;
     if (viewParam) setViewState(viewParam);
 
-    const rootIdParam = searchParams.get("rootId");
+    const rootIdParam = sp.get("rootId");
     if (rootIdParam) setRootIdState(rootIdParam);
 
-    // We intentionally ignore memberModalId in the Next.js router loop
-    // to avoid Next.js triggering re-renders on push.
-    // If the URL has it on first load, we grab it from window.location instead
-    if (typeof window !== "undefined") {
-      const sp = new URLSearchParams(window.location.search);
-      const modalId = sp.get("memberModalId");
-      if (modalId && !memberModalId) {
-        setMemberModalId(modalId);
-      }
+    const avatarParam = sp.get("avatar");
+    setShowAvatar(avatarParam !== "hide");
+
+    const modalId = sp.get("memberModalId");
+    if (modalId && !memberModalId) {
+      setMemberModalId(modalId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

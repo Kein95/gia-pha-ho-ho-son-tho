@@ -21,7 +21,7 @@ export default function DashboardHeader() {
                 sizes="32px"
               />
             </div>
-            <h1 className="text-xl sm:text-2xl font-serif font-bold text-stone-800 group-hover:text-amber-700 transition-colors">
+            <h1 className="text-xl sm:text-2xl font-serif font-bold text-stone-800 group-hover:text-amber-700 transition-colors truncate max-w-[50vw] sm:max-w-none">
               {config.siteName}
             </h1>
             {/* Ấn triện — gia phả seal */}

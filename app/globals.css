@@ -69,6 +69,13 @@ body {
   }
 }
 
+/* Family tree pan container — allow native pan but block browser
+   pinch-zoom so our custom pinch handler (native non-passive listener
+   in hooks/usePanZoom.ts) can take over without fighting the browser. */
+.tree-pan-container {
+  touch-action: pan-x pan-y;
+}
+
 /* Fix iOS auto-zoom when focusing on inputs */
 @media screen and (max-width: 768px) {
   input,

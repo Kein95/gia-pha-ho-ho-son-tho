@@ -61,7 +61,7 @@ export default function LandingHero({
             Uống Nước Nhớ Nguồn
           </div>
 
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5rem] font-serif font-bold text-stone-900 tracking-tight leading-[1.1] max-w-4xl">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5rem] font-serif font-bold text-stone-900 tracking-tight leading-[1.1] max-w-4xl break-words">
             <span className="block">{siteName}</span>
           </h1>
 

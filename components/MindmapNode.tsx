@@ -146,8 +146,35 @@ export const MindmapNode = memo(
                       </div>
                     )}
                     <div className="flex flex-col min-w-0 flex-1">
-                      <span className="font-bold text-[14px] text-stone-900 group-hover/card:text-amber-700 transition-colors leading-tight truncate mb-0.5">
-                        {data.person.full_name}
+                      <span className="font-bold text-[14px] text-stone-900 group-hover/card:text-amber-700 transition-colors leading-tight truncate mb-0.5 flex items-center gap-1.5">
+                        <span className="truncate">{data.person.full_name}</span>
+                        <span
+                          className={`shrink-0 text-[11px] font-bold leading-none ${
+                            data.person.gender === "male"
+                              ? "text-sky-600"
+                              : data.person.gender === "female"
+                                ? "text-rose-600"
+                                : "text-stone-500"
+                          }`}
+                          title={
+                            data.person.gender === "male"
+                              ? "Nam"
+                              : data.person.gender === "female"
+                                ? "Nữ"
+                                : "Khác"
+                          }
+                        >
+                          {data.person.gender === "male"
+                            ? "♂"
+                            : data.person.gender === "female"
+                              ? "♀"
+                              : "⚧"}
+                        </span>
+                        {data.person.generation != null && (
+                          <span className="shrink-0 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/60 rounded px-1 py-px leading-tight">
+                            Đ.{data.person.generation}
+                          </span>
+                        )}
                       </span>
                       <span className="text-[11px] text-stone-500 font-medium truncate flex items-center gap-1">
                         <svg
@@ -169,6 +196,14 @@ export const MindmapNode = memo(
                             ` → ${data.person.death_lunar_year || data.person.death_year || "Chưa rõ"}`}
                         </span>
                       </span>
+                      {data.person.other_names && (
+                        <span
+                          className="text-[10px] text-stone-400 italic truncate mt-0.5"
+                          title={data.person.other_names}
+                        >
+                          {data.person.other_names}
+                        </span>
+                      )}
                       {(data.person.is_deceased || data.person.is_in_law) && (
                         <div className="flex flex-wrap items-center gap-1 mt-1.5 shrink-0">
                           {data.person.is_in_law && (

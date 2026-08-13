@@ -67,7 +67,7 @@ export default function DashboardViews({
     <>
       <main className="flex-1 overflow-auto bg-stone-50/50 flex flex-col">
         {currentView !== "list" && persons.length > 0 && activeRootId && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 w-full flex flex-col sm:flex-row flex-wrap items-center sm:justify-between gap-4 relative z-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 w-full flex flex-col lg:flex-row flex-wrap items-center lg:justify-between gap-4 relative z-20">
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <RootSelector persons={persons} currentRootId={activeRootId} />
               {/* Chỉ hiện khi đang đứng ở nhánh con — setRootId(null) rơi về
@@ -85,7 +85,7 @@ export default function DashboardViews({
             </div>
             <div
               id="tree-toolbar-portal"
-              className="flex items-center gap-2 flex-wrap justify-center"
+              className="flex items-center gap-2 flex-wrap justify-center w-full lg:w-auto"
             />
           </div>
         )}

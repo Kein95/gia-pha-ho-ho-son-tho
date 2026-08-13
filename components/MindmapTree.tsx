@@ -2,10 +2,11 @@
 
 import { Person, Relationship } from "@/types";
 import { Share2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useDashboard } from "./DashboardContext";
 import { MindmapContextData, MindmapNode } from "./MindmapNode";
 import MindmapToolbar from "./MindmapToolbar";
+import { usePanZoom } from "@/hooks/usePanZoom";
 
 import { buildAdjacencyLists } from "@/utils/treeHelpers";
 
@@ -23,6 +24,7 @@ export default function MindmapTree({
   canEdit,
 }: MindmapTreeProps) {
   const { showAvatar, setMemberModalId } = useDashboard();
+  const containerRef = useRef<HTMLDivElement>(null);
   const [hideDaughtersInLaw, setHideDaughtersInLaw] = useState(false);
   const [hideSonsInLaw, setHideSonsInLaw] = useState(false);
   const [hideDaughters, setHideDaughters] = useState(false);
@@ -33,6 +35,21 @@ export default function MindmapTree({
     type: "expand" | "collapse";
     ts: number;
   } | null>(null);
+
+  const {
+    scale,
+    isPressed,
+    isDragging,
+    handlers: {
+      handleMouseDown,
+      handleMouseMove,
+      handleMouseUpOrLeave,
+      handleClickCapture,
+      handleZoomIn,
+      handleZoomOut,
+      handleResetZoom,
+    },
+  } = usePanZoom(containerRef);
 
   const ctx: MindmapContextData = useMemo(() => {
     const adj = buildAdjacencyLists(relationships, personsMap);
@@ -79,8 +96,12 @@ export default function MindmapTree({
   }
 
   return (
-    <div className="w-full h-full relative p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-140px)] flex justify-start lg:justify-center overflow-x-auto">
+    <div className="w-full h-full relative">
       <MindmapToolbar
+        scale={scale}
+        handleZoomIn={handleZoomIn}
+        handleZoomOut={handleZoomOut}
+        handleResetZoom={handleResetZoom}
         hideDaughtersInLaw={hideDaughtersInLaw}
         setHideDaughtersInLaw={setHideDaughtersInLaw}
         hideSonsInLaw={hideSonsInLaw}
@@ -99,18 +120,33 @@ export default function MindmapTree({
 
       {/* Root Container */}
       <div
-        id="export-container"
-        className="font-sans min-w-max pb-20 p-10 px-0 sm:px-8"
+        ref={containerRef}
+        className={`w-full h-full overflow-auto tree-pan-container ${isPressed ? "cursor-grabbing" : "cursor-grab"}`}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUpOrLeave}
+        onMouseLeave={handleMouseUpOrLeave}
+        onClickCapture={handleClickCapture}
+        onDragStart={(e) => e.preventDefault()}
       >
-        {roots.map((root, index) => (
-          <MindmapNode
-            key={root.id}
-            personId={root.id}
-            level={0}
-            isLast={index === roots.length - 1}
-            ctx={ctx}
-          />
-        ))}
+        <div
+          id="export-container"
+          className={`font-sans min-w-max p-10 px-0 sm:px-8 pb-20 transition-all duration-200 ${isDragging ? "opacity-90" : ""}`}
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: "top center",
+          }}
+        >
+          {roots.map((root, index) => (
+            <MindmapNode
+              key={root.id}
+              personId={root.id}
+              level={0}
+              isLast={index === roots.length - 1}
+              ctx={ctx}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

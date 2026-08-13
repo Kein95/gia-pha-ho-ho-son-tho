@@ -74,7 +74,7 @@ export default function BaseToolbar({
 
   return createPortal(
     <div
-      className="flex flex-wrap justify-center items-center gap-2 w-max"
+      className="flex flex-wrap justify-center items-center gap-2 max-w-full"
       ref={filtersRef}
     >
       {/* Custom Controls (Zoom or Expand/Collapse) */}
