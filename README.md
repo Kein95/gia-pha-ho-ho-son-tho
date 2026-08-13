@@ -117,6 +117,12 @@ bun run db:push
 # Tạo admin đầu tiên (bắt buộc — invite-only model)
 bun run scripts/seed-admin.ts <email> <password> "<tên>"
 
+# (Tùy chọn) Nạp dữ liệu cây gia phả từ Gia phả.xlsx lên DB:
+#   Bước 1 — Sinh JSON từ file Excel gốc (cần Python + openpyxl)
+python scripts/build-from-xlsx.py
+#   Bước 2 — Import lên DB (mặc định upsert; thêm --reset nếu muốn xoá dữ liệu cũ)
+bun run seed:tree -- --reset          # hoặc: bun scripts/seed-from-xlsx.ts --reset
+
 # Chạy dev
 bun run dev
 ```
