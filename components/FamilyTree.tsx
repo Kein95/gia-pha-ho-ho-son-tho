@@ -33,6 +33,7 @@ export default function FamilyTree({
 
   const {
     scale,
+    setScale,
     isPressed,
     isDragging,
     handlers: {
@@ -45,6 +46,34 @@ export default function FamilyTree({
       handleResetZoom,
     },
   } = usePanZoom(containerRef);
+
+  // Fit-to-screen: co/giãn toàn bộ cây cho vừa khung nhìn khi lần đầu render
+  // hoặc khi số người/quan hệ thay đổi. Người dùng vẫn zoom thủ công sau đó.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const content = el.querySelector<HTMLDivElement>("#export-container");
+    if (!content) return;
+
+    const fit = () => {
+      const availW = el.clientWidth - 32;
+      const availH = el.clientHeight - 32;
+      const contentW = content.scrollWidth;
+      const contentH = content.scrollHeight;
+      if (contentW <= 0 || contentH <= 0) return;
+
+      const s = Math.min(availW / contentW, availH / contentH, 1);
+      setScale(Math.max(s, 0.15));
+    };
+
+    // Chờ cây render đủ node rồi mới đo (float layout cần một frame)
+    const t = setTimeout(fit, 100);
+    window.addEventListener("resize", fit);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("resize", fit);
+    };
+  }, [personsMap, relationships, roots, setScale]);
 
   useEffect(() => {
     // Center the scroll area horizontally on initial render
@@ -228,10 +257,14 @@ export default function FamilyTree({
         .css-tree ul {
           padding-top: 30px; 
           position: relative;
-          display: flex;
-          justify-content: center;
           padding-left: 0;
           user-select: none;
+        }
+
+        .css-tree ul::after {
+          content: "";
+          display: table;
+          clear: both;
         }
 
         .css-tree li {

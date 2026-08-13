@@ -2,7 +2,7 @@
 
 import { Person, Relationship } from "@/types";
 import { Share2 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDashboard } from "./DashboardContext";
 import { MindmapContextData, MindmapNode } from "./MindmapNode";
 import MindmapToolbar from "./MindmapToolbar";
@@ -38,6 +38,7 @@ export default function MindmapTree({
 
   const {
     scale,
+    setScale,
     isPressed,
     isDragging,
     handlers: {
@@ -50,6 +51,31 @@ export default function MindmapTree({
       handleResetZoom,
     },
   } = usePanZoom(containerRef);
+
+  // Fit-to-screen cho mindmap, tương tự FamilyTree.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const content = el.querySelector<HTMLDivElement>("#export-container");
+    if (!content) return;
+
+    const fit = () => {
+      const availW = el.clientWidth - 32;
+      const availH = el.clientHeight - 32;
+      const contentW = content.scrollWidth;
+      const contentH = content.scrollHeight;
+      if (contentW <= 0 || contentH <= 0) return;
+      const s = Math.min(availW / contentW, availH / contentH, 1);
+      setScale(Math.max(s, 0.15));
+    };
+
+    const t = setTimeout(fit, 100);
+    window.addEventListener("resize", fit);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("resize", fit);
+    };
+  }, [personsMap, relationships, roots, expandSignal, setScale]);
 
   const ctx: MindmapContextData = useMemo(() => {
     const adj = buildAdjacencyLists(relationships, personsMap);

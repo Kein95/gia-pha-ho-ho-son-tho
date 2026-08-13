@@ -48,7 +48,7 @@ export const MindmapNode = memo(
     ctx: MindmapContextData;
   }) => {
     const data = getTreeData(personId, ctx);
-    const [isExpanded, setIsExpanded] = useState(level < 2);
+    const [isExpanded, setIsExpanded] = useState(true);
     const [lastSignalTs, setLastSignalTs] = useState(0);
 
     if (ctx.expandSignal && ctx.expandSignal.ts !== lastSignalTs) {

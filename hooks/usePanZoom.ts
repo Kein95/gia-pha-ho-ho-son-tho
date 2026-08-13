@@ -180,6 +180,7 @@ export function usePanZoom(
 
   return {
     scale,
+    setScale,
     isPressed,
     isDragging,
     handlers: {
