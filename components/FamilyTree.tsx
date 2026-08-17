@@ -308,12 +308,28 @@ export default function FamilyTree({
     </div>
   );
 
-  // Số đời ghi trên khung: đời lớn nhất trong dữ liệu, tính từ 1.
-  const generationCount =
-    Math.max(
-      0,
-      ...[...personsMap.values()].map((p) => (p.generation ?? 0) + 1),
-    ) || 0;
+  // Số người và số đời ghi trên khung phải đếm đúng những ai đang hiện: bật bộ
+  // lọc "Dòng cha" thì khung phải ghi số của dòng cha, không phải cả họ.
+  const visibleCounts = (() => {
+    const seen = new Set<string>();
+    let maxGeneration = 0;
+
+    const walk = (id: string, ancestors: Set<string>) => {
+      if (ancestors.has(id)) return;
+      const data = getTreeData(id);
+      if (!data.person) return;
+
+      seen.add(id);
+      data.spouses.forEach((s) => seen.add(s.person.id));
+      maxGeneration = Math.max(maxGeneration, (data.person.generation ?? 0) + 1);
+
+      const next = new Set(ancestors).add(id);
+      data.children.forEach((c) => walk(c.id, next));
+    };
+
+    roots.forEach((r) => walk(r.id, new Set()));
+    return { personCount: seen.size, generationCount: maxGeneration };
+  })();
 
   return (
     <div className="w-full h-full relative">
@@ -493,8 +509,8 @@ export default function FamilyTree({
         >
           {showFrame ? (
             <PhaDoFrame
-              personCount={personsMap.size}
-              generationCount={generationCount}
+              personCount={visibleCounts.personCount}
+              generationCount={visibleCounts.generationCount}
             >
               {treeArea}
             </PhaDoFrame>
