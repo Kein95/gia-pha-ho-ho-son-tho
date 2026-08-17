@@ -9,6 +9,16 @@ import FamilyNodeCard from "./FamilyNodeCard";
 import TreeToolbar from "./TreeToolbar";
 
 import { buildAdjacencyLists, getFilteredTreeData } from "@/utils/treeHelpers";
+import {
+  splitTreeIntoBlocks,
+  type TreeBlock,
+} from "@/utils/tree-block-split";
+
+/** Bề ngang tối đa của một khối khi xếp nhiều tầng, tính bằng px. */
+const MAX_BLOCK_WIDTH = 3200;
+/** Bề ngang một thẻ người, tuỳ theo có hiện ảnh đại diện hay không. */
+const CARD_WIDTH_WITH_AVATAR = 132;
+const CARD_WIDTH_TEXT_ONLY = 96;
 
 export default function FamilyTree({
   personsMap,
@@ -28,6 +38,7 @@ export default function FamilyTree({
   const [hideSons, setHideSons] = useState(false);
   const [hideMales, setHideMales] = useState(false);
   const [hideFemales, setHideFemales] = useState(false);
+  const [blockLayout, setBlockLayout] = useState(false);
 
   const { showAvatar } = useDashboard();
 
@@ -73,7 +84,7 @@ export default function FamilyTree({
       clearTimeout(t);
       window.removeEventListener("resize", fit);
     };
-  }, [personsMap, relationships, roots, setScale]);
+  }, [personsMap, relationships, roots, setScale, blockLayout]);
 
   useEffect(() => {
     // Center the scroll area horizontally on initial render
@@ -142,6 +153,7 @@ export default function FamilyTree({
     hideSons,
     hideMales,
     hideFemales,
+    blockLayout,
   ]);
 
   const adj = useMemo(
@@ -158,6 +170,63 @@ export default function FamilyTree({
       hideMales,
       hideFemales,
     });
+
+  // Chia cây thành các khối in được. Chỉ tính khi bật chế độ xếp nhiều tầng.
+  const blocks = useMemo(() => {
+    if (!blockLayout) return null;
+    return splitTreeIntoBlocks(
+      roots.map((r) => r.id),
+      (id) => {
+        const data = getTreeData(id);
+        return {
+          spouseCount: data.spouses.length,
+          childIds: data.children.map((c) => c.id),
+        };
+      },
+      {
+        maxBlockWidth: MAX_BLOCK_WIDTH,
+        cardWidth: showAvatar ? CARD_WIDTH_WITH_AVATAR : CARD_WIDTH_TEXT_ONLY,
+      },
+    );
+    // getTreeData đọc từ adj + các cờ lọc, nên phụ thuộc đúng vào chúng.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    blockLayout,
+    roots,
+    personsMap,
+    adj,
+    showAvatar,
+    hideDaughtersInLaw,
+    hideSonsInLaw,
+    hideDaughters,
+    hideSons,
+    hideMales,
+    hideFemales,
+  ]);
+
+  /** Ô dấu dẫn thay chỗ một chi đã tách sang khối khác. */
+  const renderBlockStub = (block: TreeBlock, name: string, level: number) => (
+    <li key={block.rootId}>
+      <div
+        className="node-container inline-flex flex-col items-center"
+        data-level={level}
+      >
+        <div className="flex relative z-10 items-stretch h-full">
+          <div className="w-[140px] px-2 py-3 rounded-2xl border-2 border-dashed border-amber-400/70 bg-amber-50/60 text-center">
+            <div className="text-[11px] font-semibold text-stone-700 leading-tight">
+              {name}
+            </div>
+            <div className="mt-1 text-[10px] font-medium text-amber-700">
+              ▼ xem khối {block.index}
+            </div>
+            <div className="text-[9px] text-stone-500">
+              {block.personCount} người
+            </div>
+          </div>
+        </div>
+      </div>
+    </li>
+  );
 
   // Recursive function for rendering nodes
   // Tracks visited IDs to prevent infinite loops from circular relationships
@@ -200,11 +269,16 @@ export default function FamilyTree({
         {/* Render Children (if any) */}
         {data.children.length > 0 && (
           <ul>
-            {data.children.map((child) => (
-              <React.Fragment key={child.id}>
-                {renderTreeNode(child.id, new Set(visited), level + 1)}
-              </React.Fragment>
-            ))}
+            {data.children.map((child) => {
+              const cutTo = blocks?.blockOfCutNode.get(child.id);
+              if (cutTo)
+                return renderBlockStub(cutTo, child.full_name, level + 1);
+              return (
+                <React.Fragment key={child.id}>
+                  {renderTreeNode(child.id, new Set(visited), level + 1)}
+                </React.Fragment>
+              );
+            })}
           </ul>
         )}
       </li>
@@ -225,6 +299,8 @@ export default function FamilyTree({
         handleZoomIn={handleZoomIn}
         handleZoomOut={handleZoomOut}
         handleResetZoom={handleResetZoom}
+        blockLayout={blockLayout}
+        setBlockLayout={setBlockLayout}
         hideDaughtersInLaw={hideDaughtersInLaw}
         setHideDaughtersInLaw={setHideDaughtersInLaw}
         hideSonsInLaw={hideSonsInLaw}
@@ -300,11 +376,13 @@ export default function FamilyTree({
           height: 30px;
         }
 
-        /* Remove top connector from first child */
-        .css-tree ul:first-child > li {
+        /* Remove top connector from first child.
+           Dùng class thay :first-child vì ở chế độ xếp khối, mỗi khối có tiêu đề
+           đứng trước <ul> nên <ul> không còn là con đầu tiên. */
+        .css-tree ul.tree-root > li {
           padding-top: 0px;
         }
-        .css-tree ul:first-child > li::before {
+        .css-tree ul.tree-root > li::before {
           display: none;
         }
 
@@ -346,13 +424,49 @@ export default function FamilyTree({
             transformOrigin: "top center",
           }}
         >
-          <ul>
-            {roots.map((root) => (
-              <React.Fragment key={root.id}>
-                {renderTreeNode(root.id)}
-              </React.Fragment>
-            ))}
-          </ul>
+          {blocks ? (
+            <div
+              className="flex flex-wrap items-start justify-center gap-x-16 gap-y-12"
+              style={{ maxWidth: MAX_BLOCK_WIDTH * 2 }}
+            >
+              {blocks.blocks.map((block) => (
+                <section
+                  key={block.rootId}
+                  className="rounded-3xl border border-stone-300/70 bg-white/40 px-8 pt-5 pb-8"
+                >
+                  <h3 className="mb-5 text-center font-serif text-xl font-bold text-stone-700">
+                    Khối {block.index}
+                    {block.index === 1 ? (
+                      " — Thân chính"
+                    ) : (
+                      <>
+                        {` — Chi ${personsMap.get(block.rootId)?.full_name ?? ""}`}
+                        {/* Cùng con số với ô dấu dẫn ở khối trên: cả chi, kể cả
+                            phần còn chảy tiếp xuống các khối sau. */}
+                        <span className="ml-2 font-sans text-sm font-normal text-stone-500">
+                          ({block.personCount} người)
+                        </span>
+                      </>
+                    )}
+                    {block.fromBlockIndex != null && (
+                      <span className="ml-3 font-sans text-sm font-medium text-amber-700">
+                        ▲ nối từ khối {block.fromBlockIndex}
+                      </span>
+                    )}
+                  </h3>
+                  <ul className="tree-root">{renderTreeNode(block.rootId)}</ul>
+                </section>
+              ))}
+            </div>
+          ) : (
+            <ul className="tree-root">
+              {roots.map((root) => (
+                <React.Fragment key={root.id}>
+                  {renderTreeNode(root.id)}
+                </React.Fragment>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>
