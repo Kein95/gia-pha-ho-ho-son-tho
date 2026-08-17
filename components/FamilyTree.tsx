@@ -6,11 +6,15 @@ import { usePanZoom } from "@/hooks/usePanZoom";
 import { Person, Relationship } from "@/types";
 import { useDashboard } from "./DashboardContext";
 import FamilyNodeCard from "./FamilyNodeCard";
+import GenerationRuler from "./GenerationRuler";
 import PhaDoFrame from "./PhaDoFrame";
 import TreeToolbar from "./TreeToolbar";
 
 import { buildAdjacencyLists, getFilteredTreeData } from "@/utils/treeHelpers";
 import { pickVerticallyStackedNodes } from "@/utils/tree-vertical-stack";
+
+/** Lề trái/phải chừa cho nhãn "ĐỜI n" của thước đời, tính bằng px. */
+const GENERATION_GUTTER = 190;
 
 export default function FamilyTree({
   personsMap,
@@ -24,6 +28,7 @@ export default function FamilyTree({
   canEdit?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const treeAreaRef = useRef<HTMLDivElement>(null);
   const [hideDaughtersInLaw, setHideDaughtersInLaw] = useState(false);
   const [hideSonsInLaw, setHideSonsInLaw] = useState(false);
   const [hideDaughters, setHideDaughters] = useState(false);
@@ -32,6 +37,10 @@ export default function FamilyTree({
   const [hideFemales, setHideFemales] = useState(false);
   const [compactLayout, setCompactLayout] = useState(false);
   const [showFrame, setShowFrame] = useState(false);
+  /** Vị trí từng hàng đời, đo sau khi cây dàn xong — dùng vẽ thước đời. */
+  const [levelBands, setLevelBands] = useState<
+    { level: number; top: number; height: number }[]
+  >([]);
 
   const { showAvatar } = useDashboard();
 
@@ -125,6 +134,40 @@ export default function FamilyTree({
           }
         });
       });
+
+      // Đo vị trí từng hàng đời để vẽ thước đời dọc hai lề. Toạ độ lấy từ
+      // getBoundingClientRect nên đang mang cả zoom fit-to-screen, phải chia lại
+      // mới ra đúng toạ độ trong lòng #export-container.
+      const content =
+        containerRef.current.querySelector<HTMLElement>("#export-container");
+      const treeArea = treeAreaRef.current;
+      if (!content || !treeArea) return;
+      const contentTop = treeArea.getBoundingClientRect().top;
+
+      // Đọc tỉ lệ thẳng từ transform đang áp, không dùng state `scale`: state đổi
+      // trước khi trình duyệt vẽ lại, lấy nhầm là toạ độ phồng lên mấy lần.
+      const transform = getComputedStyle(content).transform;
+      const appliedScale =
+        transform && transform !== "none"
+          ? new DOMMatrixReadOnly(transform).a || 1
+          : 1;
+
+      const bands = Object.entries(levelMap)
+        .map(([level, levelNodes]) => {
+          const rects = levelNodes.map((n) => n.getBoundingClientRect());
+          const top = Math.min(...rects.map((r) => r.top));
+          const bottom = Math.max(...rects.map((r) => r.bottom));
+          return {
+            level: Number(level),
+            top: (top - contentTop) / appliedScale,
+            height: (bottom - top) / appliedScale,
+          };
+        })
+        .sort((a, b) => a.level - b.level);
+
+      setLevelBands((prev) =>
+        JSON.stringify(prev) === JSON.stringify(bands) ? prev : bands,
+      );
     };
 
     const timeoutId = setTimeout(equalizeHeights, 50);
@@ -245,12 +288,24 @@ export default function FamilyTree({
       </div>
     );
 
-  const treeRoot = (
-    <ul className="tree-root">
-      {roots.map((root) => (
-        <React.Fragment key={root.id}>{renderTreeNode(root.id)}</React.Fragment>
-      ))}
-    </ul>
+  // Vùng cây kèm thước đời. Hai lề chừa trống để nhãn "ĐỜI n" không bị thẻ đè.
+  const treeArea = (
+    <div
+      ref={treeAreaRef}
+      className="relative"
+      style={{ paddingInline: compactLayout ? 0 : GENERATION_GUTTER }}
+    >
+      {/* Thước đời chỉ có nghĩa khi mỗi đời nằm gọn một hàng ngang; ở chế độ
+          xếp cột dọc các đời đan vào nhau nên bỏ đi. */}
+      {!compactLayout && <GenerationRuler bands={levelBands} />}
+      <ul className="tree-root relative z-10">
+        {roots.map((root) => (
+          <React.Fragment key={root.id}>
+            {renderTreeNode(root.id)}
+          </React.Fragment>
+        ))}
+      </ul>
+    </div>
   );
 
   // Số đời ghi trên khung: đời lớn nhất trong dữ liệu, tính từ 1.
@@ -430,7 +485,7 @@ export default function FamilyTree({
       */}
         <div
           id="export-container"
-          className={`w-max min-w-full mx-auto p-4 css-tree transition-all duration-200 ${isDragging ? "opacity-90" : ""}`}
+          className={`relative w-max min-w-full mx-auto p-4 css-tree transition-all duration-200 ${isDragging ? "opacity-90" : ""}`}
           style={{
             transform: `scale(${scale})`,
             transformOrigin: "top center",
@@ -441,10 +496,10 @@ export default function FamilyTree({
               personCount={personsMap.size}
               generationCount={generationCount}
             >
-              {treeRoot}
+              {treeArea}
             </PhaDoFrame>
           ) : (
-            treeRoot
+            treeArea
           )}
         </div>
       </div>
