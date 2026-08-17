@@ -93,15 +93,13 @@ select {
 
 /* Print styles for family tree export */
 @media print {
-  /* Hide UI chrome. Mỗi thẻ người trong cây cũng là <button> (bấm mở hồ sơ)
-     nên phải chừa mọi điều khiển nằm trong #export-container, nếu không bản in
-     mất sạch nội dung. */
-  nav,
-  header,
-  footer,
-  .no-print,
+  /* Hide UI chrome. Chừa sạch mọi thứ nằm trong #export-container: thẻ người là
+     <button> (bấm mở hồ sơ), còn khung phả đồ dùng <header>/<footer> — không
+     chừa thì bản in mất nội dung lẫn khung. */
   [id="tree-toolbar-portal"],
-  :is(button, select, input):not(#export-container *) {
+  :is(nav, header, footer, .no-print, button, select, input):not(
+      #export-container *
+    ) {
     display: none !important;
   }
 

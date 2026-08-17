@@ -6,6 +6,7 @@ import { usePanZoom } from "@/hooks/usePanZoom";
 import { Person, Relationship } from "@/types";
 import { useDashboard } from "./DashboardContext";
 import FamilyNodeCard from "./FamilyNodeCard";
+import PhaDoFrame from "./PhaDoFrame";
 import TreeToolbar from "./TreeToolbar";
 
 import { buildAdjacencyLists, getFilteredTreeData } from "@/utils/treeHelpers";
@@ -30,6 +31,7 @@ export default function FamilyTree({
   const [hideMales, setHideMales] = useState(false);
   const [hideFemales, setHideFemales] = useState(false);
   const [compactLayout, setCompactLayout] = useState(false);
+  const [showFrame, setShowFrame] = useState(false);
 
   const { showAvatar } = useDashboard();
 
@@ -243,6 +245,21 @@ export default function FamilyTree({
       </div>
     );
 
+  const treeRoot = (
+    <ul className="tree-root">
+      {roots.map((root) => (
+        <React.Fragment key={root.id}>{renderTreeNode(root.id)}</React.Fragment>
+      ))}
+    </ul>
+  );
+
+  // Số đời ghi trên khung: đời lớn nhất trong dữ liệu, tính từ 1.
+  const generationCount =
+    Math.max(
+      0,
+      ...[...personsMap.values()].map((p) => (p.generation ?? 0) + 1),
+    ) || 0;
+
   return (
     <div className="w-full h-full relative">
       <TreeToolbar
@@ -252,6 +269,8 @@ export default function FamilyTree({
         handleResetZoom={handleResetZoom}
         compactLayout={compactLayout}
         setCompactLayout={setCompactLayout}
+        showFrame={showFrame}
+        setShowFrame={setShowFrame}
         hideDaughtersInLaw={hideDaughtersInLaw}
         setHideDaughtersInLaw={setHideDaughtersInLaw}
         hideSonsInLaw={hideSonsInLaw}
@@ -417,13 +436,16 @@ export default function FamilyTree({
             transformOrigin: "top center",
           }}
         >
-          <ul className="tree-root">
-            {roots.map((root) => (
-              <React.Fragment key={root.id}>
-                {renderTreeNode(root.id)}
-              </React.Fragment>
-            ))}
-          </ul>
+          {showFrame ? (
+            <PhaDoFrame
+              personCount={personsMap.size}
+              generationCount={generationCount}
+            >
+              {treeRoot}
+            </PhaDoFrame>
+          ) : (
+            treeRoot
+          )}
         </div>
       </div>
     </div>

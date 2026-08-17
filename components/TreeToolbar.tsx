@@ -1,4 +1,4 @@
-import { LayoutGrid, ZoomIn, ZoomOut } from "lucide-react";
+import { Frame, LayoutGrid, ZoomIn, ZoomOut } from "lucide-react";
 import BaseToolbar, { BaseToolbarProps } from "./BaseToolbar";
 
 interface TreeToolbarProps extends BaseToolbarProps {
@@ -8,6 +8,38 @@ interface TreeToolbarProps extends BaseToolbarProps {
   handleResetZoom: () => void;
   compactLayout: boolean;
   setCompactLayout: (value: boolean) => void;
+  showFrame: boolean;
+  setShowFrame: (value: boolean) => void;
+}
+
+/** Nút bật/tắt một tuỳ chọn bố cục, dùng chung kiểu viên thuốc của thanh công cụ. */
+function ToggleButton({
+  active,
+  onClick,
+  title,
+  icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  title: string;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className={`flex items-center gap-2 h-10 px-4 rounded-full border shadow-sm text-sm font-medium transition-colors ${
+        active
+          ? "bg-amber-600 border-amber-600 text-white"
+          : "bg-white/80 backdrop-blur-md border-stone-200/60 text-stone-600 hover:bg-stone-100/50"
+      }`}
+    >
+      {icon}
+      <span className="hidden sm:block min-w-max">{label}</span>
+    </button>
+  );
 }
 
 export default function TreeToolbar({
@@ -17,23 +49,29 @@ export default function TreeToolbar({
   handleResetZoom,
   compactLayout,
   setCompactLayout,
+  showFrame,
+  setShowFrame,
   ...baseProps
 }: TreeToolbarProps) {
   return (
     <BaseToolbar {...baseProps}>
-      {/* Xếp nhiều tầng: mấy đời cuối xếp thành cột dọc cho cây gọn lại vừa giấy */}
-      <button
+      {/* Các chi nhỏ xếp thành cột dọc cho cả cây gọn vừa khổ giấy in */}
+      <ToggleButton
+        active={compactLayout}
         onClick={() => setCompactLayout(!compactLayout)}
-        title="Xếp mấy đời cuối thành cột dọc để cả cây gọn vừa khổ giấy in"
-        className={`flex items-center gap-2 h-10 px-4 rounded-full border shadow-sm text-sm font-medium transition-colors ${
-          compactLayout
-            ? "bg-amber-600 border-amber-600 text-white"
-            : "bg-white/80 backdrop-blur-md border-stone-200/60 text-stone-600 hover:bg-stone-100/50"
-        }`}
-      >
-        <LayoutGrid className="size-4 shrink-0" />
-        <span className="hidden sm:block min-w-max">Xếp nhiều tầng</span>
-      </button>
+        title="Xếp các chi nhỏ thành cột dọc để cả cây gọn vừa khổ giấy in"
+        icon={<LayoutGrid className="size-4 shrink-0" />}
+        label="Xếp nhiều tầng"
+      />
+
+      {/* Khung phả đồ: viền, hoành phi, triện — tắt đi khi cần bản trơn ghép Corel */}
+      <ToggleButton
+        active={showFrame}
+        onClick={() => setShowFrame(!showFrame)}
+        title="Thêm khung phả đồ: viền hoa văn, hoành phi tên dòng họ và triện"
+        icon={<Frame className="size-4 shrink-0" />}
+        label="Khung phả đồ"
+      />
 
       {/* Zoom Controls */}
       <div className="flex items-center bg-white/80 backdrop-blur-md shadow-sm border border-stone-200/60 rounded-full overflow-hidden transition-opacity h-10">
