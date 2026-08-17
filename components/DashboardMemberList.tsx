@@ -245,7 +245,9 @@ export default function DashboardMemberList({
                   <div className="flex items-center gap-3">
                     <div className="h-px flex-1 bg-stone-200"></div>
                     <h3 className="text-lg font-serif font-bold text-amber-800 bg-amber-50 px-4 py-1.5 rounded-full border border-amber-200/50 shadow-sm">
-                      {gen === "0" ? "Chưa xác định đời" : `Đời thứ ${gen}`}
+                      {/* Bảng gốc đánh số từ 0, cụ tổ là đời 0 — không phải
+                          "chưa xác định". */}
+                      {`Đời thứ ${gen}`}
                     </h3>
                     <div className="h-px flex-1 bg-stone-200"></div>
                   </div>
