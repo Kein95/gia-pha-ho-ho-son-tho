@@ -96,7 +96,7 @@ export default function FamilyNodeCard({
       {/* 2. Name */}
       <div className="gp-name flex flex-col items-center justify-center gap-0.5 w-full px-0.5 sm:px-1 relative z-10">
         <div
-          className="text-[10px] sm:text-[11px] md:text-xs font-bold text-center leading-tight transition-colors cursor-pointer text-stone-800 group-hover:text-amber-800 max-w-full"
+          className="gp-name-lines text-[10px] sm:text-[11px] md:text-xs font-bold text-center leading-tight transition-colors cursor-pointer text-stone-800 group-hover:text-amber-800 max-w-full"
           title={person.full_name}
         >
           {/* Tên luôn tách sẵn từng chữ. Ở chế độ có ảnh chúng nằm liền nhau như

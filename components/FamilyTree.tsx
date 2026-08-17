@@ -111,6 +111,24 @@ export default function FamilyTree({
       });
 
       Object.values(levelMap).forEach((levelNodes) => {
+        // Khối tên trong cùng một đời phải cao bằng nhau. Tên tách mỗi chữ một
+        // dòng nên "Hồ Mơ" chỉ cao 2 dòng còn "Nguyễn Thị Ngọc Quyên" cao 4;
+        // không cào bằng thì huy hiệu Đ.n và năm sinh của từng thẻ rơi mỗi cái
+        // một độ cao, nhìn cả hàng như so le.
+        const nameBlocks = levelNodes.flatMap((node) =>
+          Array.from(node.querySelectorAll<HTMLElement>(".gp-name-lines")),
+        );
+        nameBlocks.forEach((el) => (el.style.minHeight = "0px"));
+        const maxNameHeight = Math.max(
+          0,
+          ...nameBlocks.map((el) => el.offsetHeight),
+        );
+        if (maxNameHeight > 0) {
+          nameBlocks.forEach(
+            (el) => (el.style.minHeight = `${maxNameHeight}px`),
+          );
+        }
+
         // Reset min-height first to get natural height
         levelNodes.forEach((node) => {
           const innerFlex = node.firstElementChild as HTMLElement;
