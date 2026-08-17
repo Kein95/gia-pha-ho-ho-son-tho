@@ -9,6 +9,7 @@ import {
   FileImage,
   FileText,
   Loader2,
+  Printer,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -28,6 +29,41 @@ export default function ExportButton() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  /**
+   * PDF vector: nhờ hộp thoại in của trình duyệt ("Lưu thành PDF") thay vì chụp
+   * ảnh như PNG/PDF ở trên. Chữ giữ nguyên dạng text nên zoom không mờ và tiệm
+   * in mở được trong CorelDRAW/Illustrator.
+   *
+   * Khổ trang phải khớp kích thước thật của cây, nếu không trình duyệt cắt
+   * thành nhiều trang A4. `scrollWidth/Height` không bị ảnh hưởng bởi
+   * `transform: scale()` (zoom fit-to-screen) nên đây là kích thước thật.
+   */
+  const handlePrintVector = () => {
+    setShowMenu(false);
+    setError(null);
+
+    const element = document.getElementById("export-container");
+    if (!element) {
+      setError("Không tìm thấy vùng dữ liệu để in.");
+      setTimeout(() => setError(null), 5000);
+      return;
+    }
+
+    const PX_TO_MM = 25.4 / 96; // 1 CSS px = 1/96 inch
+    const widthMm = Math.ceil(element.scrollWidth * PX_TO_MM);
+    const heightMm = Math.ceil(element.scrollHeight * PX_TO_MM);
+
+    const style = document.createElement("style");
+    style.textContent = `@media print { @page { size: ${widthMm}mm ${heightMm}mm; margin: 0; } }`;
+    document.head.appendChild(style);
+
+    try {
+      window.print();
+    } finally {
+      style.remove();
+    }
+  };
 
   const handleExport = async (format: "png" | "pdf") => {
     try {
@@ -134,7 +170,14 @@ export default function ExportButton() {
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-stone-700 hover:text-amber-700 hover:bg-amber-50 transition-colors text-left"
             >
               <FileText className="size-4" />
-              Lưu thành PDF
+              Lưu thành PDF (ảnh)
+            </button>
+            <button
+              onClick={handlePrintVector}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-stone-700 hover:text-amber-700 hover:bg-amber-50 transition-colors text-left"
+            >
+              <Printer className="size-4" />
+              PDF vector để in
             </button>
           </motion.div>
         )}

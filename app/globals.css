@@ -123,6 +123,19 @@ select {
     height: auto !important;
   }
 
+  /* Vùng cây: bỏ zoom fit-to-screen và bỏ cắt cuộn để in trọn kích thước thật.
+     Khổ trang do ExportButton tính rồi chèn @page size trước khi gọi print. */
+  .tree-pan-container {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  #export-container {
+    transform: none !important;
+    padding: 0 !important;
+  }
+
   /* Print title header */
   .print-header {
     display: block !important;
