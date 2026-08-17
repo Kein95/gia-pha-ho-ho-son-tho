@@ -391,13 +391,6 @@ export default function FamilyTree({
           padding: 30px 5px 0 5px;
         }
 
-        /* Chế độ tối giản (bỏ ảnh đại diện): thẻ chỉ còn chữ nên bóp sát lề hai
-           bên, bề ngang cả cây co lại đáng kể khi có hơn trăm cành cụt. */
-        .css-tree.text-only li {
-          padding-left: 1px;
-          padding-right: 1px;
-        }
-
         /* Connecting lines */
         .css-tree li::before, .css-tree li::after {
           content: '';
@@ -508,6 +501,8 @@ export default function FamilyTree({
       */}
         <div
           id="export-container"
+          // `text-only` không có kiểu nào trên màn hình, chỉ là móc để CSS in
+          // biết cây đang ở chế độ chỉ có chữ mà bóp lề cho tờ in hẹp lại.
           className={`relative w-max min-w-full mx-auto p-4 css-tree transition-all duration-200 ${showAvatar ? "" : "text-only"} ${isDragging ? "opacity-90" : ""}`}
           style={{
             transform: `scale(${scale})`,

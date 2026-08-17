@@ -141,6 +141,7 @@ select {
     filter: none !important;
   }
 
+
   /* Print title header */
   .print-header {
     display: block !important;
@@ -156,6 +157,40 @@ select {
 /* Hidden by default, shown only in print */
 .print-header {
   display: none;
+}
+
+/* ── Bố cục riêng cho tờ in: bóp sát lề khi cây đang bỏ ảnh đại diện ────────
+   Bề ngang tờ in do số cành cụt nhân bề ngang thẻ quyết định, cây này hơn trăm
+   cành nên mỗi vài px lề đều thành cả mét giấy. Bỏ ảnh thì tên đã tự xuống dòng
+   mỗi chữ một hàng; bóp nốt lề thẻ và lề ô thì tờ in từ 4547mm còn khoảng
+   1850mm mà vẫn đủ người, mỗi đời vẫn một hàng ngang.
+
+   Đặt ngoài @media print có chủ ý: nút Xuất file gắn class `printing` rồi mới
+   ĐO khổ trang, nên bố cục lúc đo phải giống hệt lúc in, nếu không khổ giấy sẽ
+   thừa ra một dải trắng. `text-only` chỉ có khi cây đang tắt ảnh đại diện. */
+#export-container.text-only.printing .gp-card {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#export-container.text-only.printing .gp-name {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+#export-container.text-only.printing li {
+  padding-left: 1px;
+  padding-right: 1px;
+}
+
+/* Dấu nhẫn cưới vốn thò ra ngoài mép thẻ; lề đã sát thì nó đè lên tên người bên
+   cạnh, nên kéo vào trong lòng thẻ và chừa chỗ riêng. */
+#export-container.text-only.printing .gp-ring {
+  left: 0;
+}
+
+#export-container.text-only.printing .gp-card--has-ring {
+  padding-left: 24px;
 }
 
 .btn {

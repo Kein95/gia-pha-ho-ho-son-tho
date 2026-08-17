@@ -14,8 +14,10 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useDashboard } from "./DashboardContext";
 
 export default function ExportButton() {
+  const { showAvatar, setShowAvatar } = useDashboard();
   const [isExporting, setIsExporting] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,16 +42,34 @@ export default function ExportButton() {
    * thành nhiều trang A4. `scrollWidth/Height` không bị ảnh hưởng bởi
    * `transform: scale()` (zoom fit-to-screen) nên đây là kích thước thật.
    */
-  const handlePrintVector = () => {
+  const handlePrintVector = async () => {
     setShowMenu(false);
     setError(null);
 
-    const element = document.getElementById("export-container");
-    if (!element) {
+    if (!document.getElementById("export-container")) {
       setError("Không tìm thấy vùng dữ liệu để in.");
       setTimeout(() => setError(null), 5000);
       return;
     }
+
+    // Tờ in bỏ ảnh đại diện cho hẹp lại (bề ngang còn khoảng 40%), màn hình thì
+    // giữ nguyên. Phải đổi hẳn trạng thái chứ không ẩn bằng CSS: cây còn phải
+    // dàn lại chiều cao hàng và đo lại thước đời theo bố cục mới.
+    const restoreAvatar = showAvatar;
+    if (restoreAvatar) setShowAvatar(false);
+
+    // Chờ cây render lại rồi mới đo — các hiệu ứng dàn hàng chạy sau vài nhịp.
+    await new Promise((resolve) => setTimeout(resolve, restoreAvatar ? 500 : 100));
+
+    const element = document.getElementById("export-container");
+    if (!element) {
+      if (restoreAvatar) setShowAvatar(true);
+      return;
+    }
+
+    // Bật bố cục tờ in trước khi đo: khổ trang phải tính trên đúng bố cục sẽ in.
+    element.classList.add("printing");
+    await new Promise((resolve) => setTimeout(resolve, 250));
 
     const PX_TO_MM = 25.4 / 96; // 1 CSS px = 1/96 inch
     const widthMm = Math.ceil(element.scrollWidth * PX_TO_MM);
@@ -63,6 +83,8 @@ export default function ExportButton() {
       window.print();
     } finally {
       style.remove();
+      element.classList.remove("printing");
+      if (restoreAvatar) setShowAvatar(true);
     }
   };
 

@@ -18,6 +18,7 @@ export default function FamilyNodeCard({
 }: FamilyNodeCardProps) {
   const { showAvatar, setMemberModalId } = useDashboard();
 
+  const nameWords = person.full_name.split(" ");
   const isDeceased = person.is_deceased;
   const birthYear = person.birth_year;
   const deathYear = person.death_lunar_year || person.death_year;
@@ -34,24 +35,17 @@ export default function FamilyNodeCard({
   const content = (
     <div
       className={`
-        group py-2 px-1.5 flex flex-col items-center justify-start transition-all duration-300 hover:-translate-y-1 rounded-2xl relative h-full
+        gp-card group py-2 px-1.5 flex flex-col items-center justify-start transition-all duration-300 hover:-translate-y-1 rounded-2xl relative h-full
         ${isDeceased ? "grayscale-[0.4] opacity-80" : ""}
-        ${
-          showAvatar
-            ? "w-20 sm:w-28 md:w-32 bg-white/70 hover:shadow-xl"
-            : // Chế độ tối giản bóp lề sát nên phải chừa chỗ trong lòng thẻ cho
-              // dấu nhẫn cưới, không thì nó đè lên tên người bên cạnh.
-              isRingVisible || isPlusVisible
-              ? "pl-6 pr-1"
-              : "px-1"
-        }
+        ${isRingVisible || isPlusVisible ? "gp-card--has-ring" : ""}
+        ${showAvatar ? "w-20 sm:w-28 md:w-32 bg-white/70 hover:shadow-xl" : "px-3"}
       `}
     >
       {isRingVisible && (
         <div
           className={`
-            absolute top-[15%] size-5 sm:size-6 rounded-full z-10 flex items-center justify-center text-[10px] sm:text-sm font-medium text-stone-500
-            ${showAvatar ? "-left-2.5 sm:-left-3.5 shadow-sm bg-white" : "left-0"}
+            gp-ring absolute top-[15%] -left-2.5 sm:-left-3.5 size-5 sm:size-6 rounded-full z-10 flex items-center justify-center text-[10px] sm:text-sm font-medium text-stone-500
+            ${showAvatar ? "shadow-sm bg-white" : ""}
           `}
         >
           <span className="leading-none">💍</span>
@@ -60,8 +54,8 @@ export default function FamilyNodeCard({
       {isPlusVisible && (
         <div
           className={`
-            absolute top-[15%] size-5 sm:size-6 rounded-full z-10 flex items-center justify-center text-[10px] sm:text-sm font-medium text-stone-500
-            ${showAvatar ? "-left-2.5 sm:-left-3.5 shadow-sm bg-white" : "left-0"}
+            gp-ring absolute top-[15%] -left-2.5 sm:-left-3.5 size-5 sm:size-6 rounded-full z-10 flex items-center justify-center text-[10px] sm:text-sm font-medium text-stone-500
+            ${showAvatar ? "shadow-sm bg-white" : ""}
           `}
         >
           <span className="leading-none">+</span>
@@ -70,7 +64,7 @@ export default function FamilyNodeCard({
 
       {/* 1. Avatar */}
       {showAvatar && (
-        <div className="relative z-10 mb-1.5 sm:mb-2">
+        <div className="gp-avatar relative z-10 mb-1.5 sm:mb-2">
           <div
             className={`
               h-10 w-10 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-full flex items-center justify-center text-[10px] sm:text-xs md:text-sm text-white overflow-hidden shrink-0 shadow-lg ring-2 ring-white transition-transform duration-300 group-hover:scale-105
@@ -100,22 +94,23 @@ export default function FamilyNodeCard({
       )}
 
       {/* 2. Name */}
-      <div
-        className={`flex flex-col items-center justify-center gap-0.5 w-full relative z-10 ${
-          showAvatar ? "px-0.5 sm:px-1" : ""
-        }`}
-      >
+      <div className="gp-name flex flex-col items-center justify-center gap-0.5 w-full px-0.5 sm:px-1 relative z-10">
         <div
           className="text-[10px] sm:text-[11px] md:text-xs font-bold text-center leading-tight transition-colors cursor-pointer text-stone-800 group-hover:text-amber-800 max-w-full"
           title={person.full_name}
         >
-          {showAvatar
-            ? person.full_name
-            : person.full_name.split(" ").map((word, i) => (
-                <span key={i} className="block">
-                  {word}
-                </span>
-              ))}
+          {/* Tên luôn tách sẵn từng chữ. Ở chế độ có ảnh chúng nằm liền nhau như
+              một dòng bình thường; chế độ tối giản và bản in cho mỗi chữ xuống
+              một dòng để thẻ chỉ rộng bằng chữ dài nhất. */}
+          {nameWords.map((word, i) => (
+            <span
+              key={i}
+              className={`gp-name-word${showAvatar ? "" : " block"}`}
+            >
+              {word}
+              {i < nameWords.length - 1 ? " " : ""}
+            </span>
+          ))}
         </div>
 
         {/* Generation + Gender */}
