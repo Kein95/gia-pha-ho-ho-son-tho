@@ -14,7 +14,7 @@ import { buildAdjacencyLists, getFilteredTreeData } from "@/utils/treeHelpers";
 import { pickVerticallyStackedNodes } from "@/utils/tree-vertical-stack";
 
 /** Lề trái/phải chừa cho nhãn "ĐỜI n" của thước đời, tính bằng px. */
-const GENERATION_GUTTER = 190;
+const GENERATION_GUTTER = 105;
 
 export default function FamilyTree({
   personsMap,

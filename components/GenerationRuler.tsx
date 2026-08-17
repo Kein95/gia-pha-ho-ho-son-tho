@@ -27,10 +27,10 @@ export default function GenerationRuler({
           }`}
           style={{ top: band.top, height: band.height }}
         >
-          <span className="px-6 text-[42px] font-bold tracking-[0.2em] text-amber-700/50">
+          <span className="px-4 text-[17px] font-bold tracking-[0.18em] text-amber-700/55">
             ĐỜI {band.level}
           </span>
-          <span className="px-6 text-[42px] font-bold tracking-[0.2em] text-amber-700/50">
+          <span className="px-4 text-[17px] font-bold tracking-[0.18em] text-amber-700/55">
             ĐỜI {band.level}
           </span>
         </div>

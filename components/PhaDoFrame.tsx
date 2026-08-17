@@ -1,6 +1,22 @@
 "use client";
 
 import config from "@/app/config";
+import Image from "next/image";
+
+/** Hoa văn trống đồng Đông Sơn đặt bốn góc khung, mờ để không át phần tên. */
+function DrumCorner({ className }: { className: string }) {
+  return (
+    <Image
+      unoptimized
+      aria-hidden
+      src="/trongdong/drum-gold.png"
+      alt=""
+      width={520}
+      height={520}
+      className={`pointer-events-none absolute size-[520px] opacity-50 ${className}`}
+    />
+  );
+}
 
 /**
  * Khung phả đồ bao quanh cây khi in: viền kép, dải hoa văn chữ triện, hoành phi
@@ -30,7 +46,12 @@ export default function PhaDoFrame({
   // chữ thường của giao diện web sẽ nhỏ như hạt gạo trên bản in.
   return (
     <div className="orn-frame border-[10px] border-[var(--gold-strong)] bg-[var(--surface-card)] p-4">
-      <div className="border-4 border-[var(--gold)] px-24 py-16">
+      <div className="relative overflow-hidden border-4 border-[var(--gold)] px-24 py-16">
+        <DrumCorner className="-top-40 -left-40" />
+        <DrumCorner className="-top-40 -right-40" />
+        <DrumCorner className="-bottom-40 -left-40" />
+        <DrumCorner className="-right-40 -bottom-40" />
+
         <div className="orn-frame__c orn-frame__c--tl !size-14 !border-4" />
         <div className="orn-frame__c orn-frame__c--tr !size-14 !border-4" />
         <div className="orn-frame__c orn-frame__c--bl !size-14 !border-4" />
