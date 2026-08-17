@@ -6,6 +6,7 @@ import jsPDF from "jspdf";
 import {
   AlertCircle,
   Download,
+  FileCode,
   FileImage,
   FileText,
   Loader2,
@@ -62,6 +63,51 @@ export default function ExportButton() {
       window.print();
     } finally {
       style.remove();
+    }
+  };
+
+  /**
+   * SVG vector thật: dựng lại cây bằng rect/line/text SVG gốc (xem
+   * `utils/dom-to-svg`). Phải tạm bỏ zoom fit-to-screen để toạ độ đo được là
+   * kích thước thật.
+   */
+  const handleExportSvg = async () => {
+    setShowMenu(false);
+    setError(null);
+
+    const element = document.getElementById("export-container");
+    if (!element) {
+      setError("Không tìm thấy vùng dữ liệu để xuất.");
+      setTimeout(() => setError(null), 5000);
+      return;
+    }
+
+    setIsExporting(true);
+    const savedTransform = element.style.transform;
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      element.style.transform = "none";
+
+      const { elementToSvg } = await import("@/utils/dom-to-svg");
+      const svg = elementToSvg(element);
+
+      const url = URL.createObjectURL(
+        new Blob([svg], { type: "image/svg+xml;charset=utf-8" }),
+      );
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `giapha-sodo-${new Date().toISOString().split("T")[0]}.svg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("SVG export error:", err);
+      setError("Đã xảy ra lỗi khi xuất SVG. Vui lòng thử lại.");
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      element.style.transform = savedTransform;
+      setIsExporting(false);
     }
   };
 
@@ -171,6 +217,13 @@ export default function ExportButton() {
             >
               <FileText className="size-4" />
               Lưu thành PDF (ảnh)
+            </button>
+            <button
+              onClick={handleExportSvg}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-stone-700 hover:text-amber-700 hover:bg-amber-50 transition-colors text-left"
+            >
+              <FileCode className="size-4" />
+              Xuất SVG (vector)
             </button>
             <button
               onClick={handlePrintVector}
