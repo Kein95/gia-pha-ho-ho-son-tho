@@ -144,17 +144,27 @@ for r in range(3, ws.max_row + 1):
 _named_rows = [rr for rr in raw_rows if rr["name"]]
 _named_rows.sort(key=lambda x: x["row"])
 
+# Dòng phối ngẫu phụ (cột A trống, cột C có tên - vd dòng 56 "Thị Lan") thuộc về
+# người ở dòng trên, KHÔNG phải dòng cách ngăn nhóm.
+_cont_rows = {rr["row"] for rr in raw_rows if not rr["name"]}
+
 _i = 0
 while _i < len(_named_rows):
     _anchor = _named_rows[_i]
-    if _anchor["parent_cell"] and _anchor["gen"] is not None:
+    # Hàng chốt có thể bỏ trống cột E (vd dòng 159); anh em kế thừa vẫn hợp lệ
+    # miễn cột E của họ giống hàng chốt (cùng None cũng tính là giống).
+    if _anchor["parent_cell"]:
         _pc = _anchor["parent_cell"]
         _g = _anchor["gen"]
         _j = _i + 1
         while _j < len(_named_rows):
             _nxt = _named_rows[_j]
-            # liền kề theo số dòng thực trong sheet (bắt được dòng trống ngăn nhóm)
-            if _nxt["row"] != _named_rows[_j - 1]["row"] + 1:
+            # liền kề theo số dòng thực trong sheet (bắt được dòng trống ngăn nhóm);
+            # bỏ qua các dòng phối ngẫu phụ nằm xen giữa
+            if any(
+                x not in _cont_rows
+                for x in range(_named_rows[_j - 1]["row"] + 1, _nxt["row"])
+            ):
                 break
             if _nxt["parent_cell"]:
                 break
@@ -272,10 +282,17 @@ def resolve_parent(tok: str, child_row_gen, child_person: Person):
             return p, False, []
         return None, True, [h.full_name + f"(đời {h.gen_recorded})" for h in uniq]
 
-    # 1) trùng canonical
+    # 1) trùng canonical - chỉ nhận khi đời khớp (cha phải ở đời con - 1).
+    # Cột H ghi tên rút gọn ("Hồ Mân" = "Hồ Công Mân" đời 5) nên một canonical
+    # trùng khít với người khác đời (Hồ Mân đời 6) là khớp giả -> đi tiếp bước 2.
     exact = index.get(c, [])
     if exact:
-        return _resolve(exact)
+        g = child_person.gen_recorded if child_person.gen_recorded is not None else child_row_gen
+        if g is None or any(
+            (h.gen_recorded if h.gen_recorded is not None else h.gen_final) == g - 1
+            for h in exact
+        ):
+            return _resolve(exact)
 
     c_tok = c.split()
     last = c_tok[-1]
