@@ -28,7 +28,7 @@ export default function ViewToggle() {
   ] as const;
 
   return (
-    <div className="flex bg-stone-200/50 p-1.5 rounded-full shadow-inner w-fit mx-auto mt-4 mb-2 relative border border-stone-200/60 backdrop-blur-sm z-10">
+    <div className="no-print flex bg-stone-200/50 p-1.5 rounded-full shadow-inner w-fit mx-auto mt-4 mb-2 relative border border-stone-200/60 backdrop-blur-sm z-10">
       {tabs.map((tab) => {
         const isActive = currentView === tab.id;
         return (

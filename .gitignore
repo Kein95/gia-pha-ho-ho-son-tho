@@ -53,6 +53,9 @@ Gia Phả Design System.zip
 Gia phả vector/
 Gia phả vector-*.zip
 
+# file sơ đồ xuất ra để mang đi in (chứa dữ liệu cá nhân, repo public)
+xuat-in/
+
 # vercel
 .vercel
 
