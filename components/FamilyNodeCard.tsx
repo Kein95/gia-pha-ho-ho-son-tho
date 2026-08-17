@@ -36,14 +36,22 @@ export default function FamilyNodeCard({
       className={`
         group py-2 px-1.5 flex flex-col items-center justify-start transition-all duration-300 hover:-translate-y-1 rounded-2xl relative h-full
         ${isDeceased ? "grayscale-[0.4] opacity-80" : ""}
-        ${showAvatar ? "w-20 sm:w-28 md:w-32 bg-white/70 hover:shadow-xl" : "px-3"}
+        ${
+          showAvatar
+            ? "w-20 sm:w-28 md:w-32 bg-white/70 hover:shadow-xl"
+            : // Chế độ tối giản bóp lề sát nên phải chừa chỗ trong lòng thẻ cho
+              // dấu nhẫn cưới, không thì nó đè lên tên người bên cạnh.
+              isRingVisible || isPlusVisible
+              ? "pl-6 pr-1"
+              : "px-1"
+        }
       `}
     >
       {isRingVisible && (
         <div
           className={`
-            absolute top-[15%] -left-2.5 sm:-left-3.5 size-5 sm:size-6 rounded-full z-10 flex items-center justify-center text-[10px] sm:text-sm font-medium text-stone-500
-            ${showAvatar ? "shadow-sm bg-white" : ""}
+            absolute top-[15%] size-5 sm:size-6 rounded-full z-10 flex items-center justify-center text-[10px] sm:text-sm font-medium text-stone-500
+            ${showAvatar ? "-left-2.5 sm:-left-3.5 shadow-sm bg-white" : "left-0"}
           `}
         >
           <span className="leading-none">💍</span>
@@ -52,8 +60,8 @@ export default function FamilyNodeCard({
       {isPlusVisible && (
         <div
           className={`
-            absolute top-[15%] -left-2.5 sm:-left-3.5 size-5 sm:size-6 rounded-full z-10 flex items-center justify-center text-[10px] sm:text-sm font-medium text-stone-500
-            ${showAvatar ? "shadow-sm bg-white" : ""}
+            absolute top-[15%] size-5 sm:size-6 rounded-full z-10 flex items-center justify-center text-[10px] sm:text-sm font-medium text-stone-500
+            ${showAvatar ? "-left-2.5 sm:-left-3.5 shadow-sm bg-white" : "left-0"}
           `}
         >
           <span className="leading-none">+</span>
@@ -92,7 +100,11 @@ export default function FamilyNodeCard({
       )}
 
       {/* 2. Name */}
-      <div className="flex flex-col items-center justify-center gap-0.5 w-full px-0.5 sm:px-1 relative z-10">
+      <div
+        className={`flex flex-col items-center justify-center gap-0.5 w-full relative z-10 ${
+          showAvatar ? "px-0.5 sm:px-1" : ""
+        }`}
+      >
         <div
           className="text-[10px] sm:text-[11px] md:text-xs font-bold text-center leading-tight transition-colors cursor-pointer text-stone-800 group-hover:text-amber-800 max-w-full"
           title={person.full_name}
