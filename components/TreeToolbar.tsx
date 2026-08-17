@@ -6,8 +6,8 @@ interface TreeToolbarProps extends BaseToolbarProps {
   handleZoomIn: () => void;
   handleZoomOut: () => void;
   handleResetZoom: () => void;
-  blockLayout: boolean;
-  setBlockLayout: (value: boolean) => void;
+  compactLayout: boolean;
+  setCompactLayout: (value: boolean) => void;
 }
 
 export default function TreeToolbar({
@@ -15,18 +15,18 @@ export default function TreeToolbar({
   handleZoomIn,
   handleZoomOut,
   handleResetZoom,
-  blockLayout,
-  setBlockLayout,
+  compactLayout,
+  setCompactLayout,
   ...baseProps
 }: TreeToolbarProps) {
   return (
     <BaseToolbar {...baseProps}>
-      {/* Xếp nhiều tầng: cắt cây dài thành từng khối cho vừa khổ giấy in */}
+      {/* Xếp nhiều tầng: mấy đời cuối xếp thành cột dọc cho cây gọn lại vừa giấy */}
       <button
-        onClick={() => setBlockLayout(!blockLayout)}
-        title="Cắt cây thành từng khối xếp nhiều tầng cho vừa khổ giấy in"
+        onClick={() => setCompactLayout(!compactLayout)}
+        title="Xếp mấy đời cuối thành cột dọc để cả cây gọn vừa khổ giấy in"
         className={`flex items-center gap-2 h-10 px-4 rounded-full border shadow-sm text-sm font-medium transition-colors ${
-          blockLayout
+          compactLayout
             ? "bg-amber-600 border-amber-600 text-white"
             : "bg-white/80 backdrop-blur-md border-stone-200/60 text-stone-600 hover:bg-stone-100/50"
         }`}
