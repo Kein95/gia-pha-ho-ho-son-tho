@@ -39,6 +39,9 @@ anh goc data/
 plans/260619-1933-digitize-genealogy/
 # bản nháp ~180 tên tới đời 7 đọc từ ảnh gốc — cùng loại dữ liệu riêng tư như trên
 gia_pha_ho_ho_ban_nhap.md
+# bảng thô do gia đình ghi (nguồn của build-from-xlsx.py) + backup DB xuất ra
+Gia phả.xlsx
+backups/
 
 # tài sản đồ hoạ tải về: bộ vector của bên thứ ba + gói handoff design system.
 # Repo public nên đẩy lên là phát tán bản quyền của người khác. Giữ nguyên trên đĩa.
@@ -49,6 +52,10 @@ Gia Phả Design System.zip
 
 # vercel
 .vercel
+
+# dev server local
+dev.pid
+.commandcode/
 
 # typescript
 *.tsbuildinfo
