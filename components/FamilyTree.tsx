@@ -208,6 +208,10 @@ export default function FamilyTree({
     hideMales,
     hideFemales,
     compactLayout,
+    // Bật khung là đưa cả cây vào trong PhaDoFrame, React dựng lại DOM mới nên
+    // chiều cao đã cào bằng mất sạch. Thiếu phụ thuộc này thì bản in có khung
+    // không đời nào được cào bằng, mỗi thẻ một độ cao.
+    showFrame,
   ]);
 
   const adj = useMemo(
